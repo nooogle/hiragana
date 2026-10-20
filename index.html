@@ -57,6 +57,8 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .row.off .cell{color:var(--muted);background:transparent;border:1.5px dashed var(--line)}
 .tag{width:40px;flex:none;font-size:.82rem;font-weight:700;color:var(--accent);text-align:center}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:16px 2px 0}
+.howlink{margin:22px 2px 0;font-size:.95rem}
+.howlink a,.sheet a{color:var(--accent);font-weight:700;text-underline-offset:3px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:5px}
 
 .sbar{display:flex;align-items:center;gap:12px;padding:6px 0 14px}
@@ -2418,7 +2420,8 @@ function renderHome(){
       <h2>Basic hiragana</h2>${ROWS.filter(r=>!r.base).map(rowHTML).join('')}
       <h2>With dakuten</h2>${ROWS.filter(r=>r.base).map(rowHTML).join('')}
     </section>
-    <div class="legend"><span><i style="background:var(--l1)"></i>Learning</span><span><i style="background:var(--l2)"></i>Shaky</span><span><i style="background:var(--l3)"></i>Good</span><span><i style="background:var(--l4)"></i>${S.settings.write===false?'Solid':'Solid, can write it'}</span></div>`;
+    <div class="legend"><span><i style="background:var(--l1)"></i>Learning</span><span><i style="background:var(--l2)"></i>Shaky</span><span><i style="background:var(--l3)"></i>Good</span><span><i style="background:var(--l4)"></i>${S.settings.write===false?'Solid':'Solid, can write it'}</span></div>
+    <p class="howlink"><a href="how-it-works.html">How this works</a></p>`;
 }
 
 // ---------- Progress report ----------
@@ -2529,13 +2532,13 @@ function settingsSheet(){
       ${hasTTS?`<option value="phone" ${S.settings.voice==='phone'?'selected':''}>This phone's voice</option>`:''}
     </select></label>
     <button class="secondary" data-act="testvoice">Test: は へ を ん</button>
-    <p class="sub" style="font-size:.8rem;margin-top:10px">Recorded voice: Google Cloud Text-to-Speech.</p>
+    <p class="sub" style="font-size:.8rem;margin-top:10px">Recorded voice: Google Cloud Text-to-Speech (Chirp 3 HD, Aoede). <a href="how-the-voice-was-made.html">How the clips were made</a></p>
     <h3>Backup</h3>
     <p class="sub">Progress is stored on this phone only. Copy a backup now and then, and paste it here to restore it.</p>
     <button class="secondary" data-act="copy">Copy backup</button>
     <textarea id="restore" placeholder="Paste a backup here"></textarea>
     <button class="secondary" data-act="restore">Restore from backup</button>
-    <p class="sub" style="font-size:.8rem;margin-top:16px">Reviews are scheduled with FSRS (ts-fsrs, MIT licence), aiming for 90% recall.</p>
+    <p class="sub" style="font-size:.8rem;margin-top:16px">Reviews are scheduled with FSRS (ts-fsrs, MIT licence), aiming for 90% recall. <a href="how-it-works.html">How it all works</a></p>
     <button class="danger" data-act="reset">Reset all progress</button>
     <button class="secondary" data-act="close">Done</button>`);
 }

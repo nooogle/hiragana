@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How it works · Hiragana drill</title>
+<meta name="description" content="How the hiragana drill works: the questions, the spaced repetition, your data and putting it on your phone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EEF0EA;--card:#FAFBF7;--ink:#1C2333;--muted:#5F6674;--line:#CDD2C6;--accent:#27407A;
+  --l1:#F2C7BC;--l2:#F3DDA6;--l3:#C9E0B1;--l4:#8CC49C;
+  --ui:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12161E;--card:#1B212C;--ink:#E6E9EF;--muted:#9AA1AE;--line:#2E3644;--accent:#93ABEA;--l1:#6A3328;--l2:#665324;--l3:#3D5A30;--l4:#2F6E48}}
+:root[data-theme="dark"]{--paper:#12161E;--card:#1B212C;--ink:#E6E9EF;--muted:#9AA1AE;--line:#2E3644;--accent:#93ABEA;--l1:#6A3328;--l2:#665324;--l3:#3D5A30;--l4:#2F6E48}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-weight:500;line-height:1.65;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(48px + env(safe-area-inset-bottom,0px))}
+nav{display:flex;gap:16px;font-weight:700;margin-bottom:22px}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1{font-size:1.9rem;line-height:1.25;margin:0 0 10px}
+h2{font-size:1.2rem;margin:34px 0 8px}
+p,ul{margin:0 0 14px}
+ul{padding-left:1.2em}
+li{margin-bottom:6px}
+.lead{font-size:1.08rem;color:var(--muted)}
+.kana{font-family:"Klee One",serif;font-size:1.15em}
+.colours{list-style:none;padding:0}
+.colours li{display:flex;gap:10px;align-items:baseline}
+.colours i{flex:none;display:inline-block;width:14px;height:14px;border-radius:4px;transform:translateY(2px)}
+.note{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:18px 0}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.92rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="./">← Back to the app</a><a href="../">All apps</a></nav>
+
+<h1>How the hiragana drill works</h1>
+<p class="lead">It's a little practice app for learning hiragana. I built it to help my son get through his Japanese course, but it works for anyone who's learning. It runs in your phone's browser, there's no account to make, and nothing you do leaves your phone.</p>
+
+<h2>Getting going</h2>
+<p>When you open it you'll see the hiragana chart. Each row (<span class="kana">あいうえお</span>, <span class="kana">かきくけこ</span> and so on) stays greyed out until you add it. Tap a row and you get two choices:</p>
+<ul>
+<li><b>I already know these.</b> You get a quick check, one card per kana. Anything you get right starts a bit further along, and anything you miss starts from scratch.</li>
+<li><b>They're new to me.</b> Each one gets a little intro card first (the kana, its romaji and its sound) before you're tested on it.</li>
+</ul>
+<p>Add rows as your course gets to them. You can add the lot on day one, but you'll get a mountain of reviews if you do.</p>
+
+<h2>The questions</h2>
+<ul>
+<li><b>What sound is this?</b> You see a kana and pick the romaji.</li>
+<li><b>Which hiragana is this?</b> You see the romaji and pick the kana. About half of these are listening questions instead, where you only hear the sound. If you're somewhere you can't play sound, tap "Can't use sound right now".</li>
+<li><b>Write this one.</b> Draw it with your finger, tap Check, and compare it with the right answer. You mark this one yourself, so be honest with yourself. If you only want reading practice, you can switch writing off in Settings.</li>
+</ul>
+<p>You start with reading. Picking the kana from romaji unlocks once you can read it, and writing unlocks after that.</p>
+<p>The wrong answers aren't random, either. They're the ones people really do mix up, like <span class="kana">ぬ</span> and <span class="kana">め</span>, or <span class="kana">は</span> and <span class="kana">ほ</span>. Everything's shuffled too, so you can't coast along just knowing the order of the chart.</p>
+
+<div class="note"><b>Please don't guess.</b> If you're not sure, tap <b>Don't know</b>. A lucky guess tells the app you know something you don't, and it'll leave that kana alone for days. "Don't know" brings it back a few cards later and keeps it coming round until it sticks.</div>
+
+<h2>How the spaced repetition works</h2>
+<p>The idea is pretty simple. You remember things best if you go over them just as you're about to forget them. Too soon is a waste of your time, and too late means you've already lost it.</p>
+<p>The app uses a scheduling method called FSRS (the same one Anki offers). For every card it keeps an estimate of how well you know it, and books the next review for roughly the point where you'd still have about a 90% chance of getting it right.</p>
+<p>In practice that means:</p>
+<ul>
+<li>Get one wrong and it comes back in about a minute, then ten minutes, and then you build it back up again.</li>
+<li>Get one right and the gaps get longer: a couple of days, then about ten days, then a month or so.</li>
+<li>If you answer quickly, it counts as easy and the gap stretches further. If you answer slowly, it counts as hard and the gap grows less.</li>
+<li>No gap is ever longer than 60 days. Picking from four answers is easier than remembering from nothing, so I didn't want it getting overconfident.</li>
+</ul>
+<p>So the ones you always know drift away and only pop up now and then, and most of your time goes on the ones you find tricky. That's the whole point really.</p>
+
+<h2>The buttons on the home screen</h2>
+<ul>
+<li><b>Start review</b> does everything that's due right now, up to 30 cards at a time, so sessions stay short.</li>
+<li><b>Practise weakest</b> gives you extra goes at your shakiest cards.</li>
+<li><b>Run through everything</b> gives you one card for every kana you've started, all shuffled. It's good for a quick check before a test.</li>
+</ul>
+<p>Practising and running through don't mess up your schedule. Getting one right there doesn't push it further away, but getting one wrong does bring it back sooner.</p>
+<p>Two or three short sessions a day work much better than one long one. Five minutes on the bus is plenty.</p>
+
+<h2>What the colours mean</h2>
+<p>Each kana on the chart is coloured by how well you know it across all the question types:</p>
+<ul class="colours">
+<li><i style="background:var(--l1)"></i><span><b>Learning</b>: still new, or you've just got it wrong.</span></li>
+<li><i style="background:var(--l2)"></i><span><b>Shaky</b>: getting there, but it'll need checking again soon.</span></li>
+<li><i style="background:var(--l3)"></i><span><b>Good</b>: you mostly know it.</span></li>
+<li><i style="background:var(--l4)"></i><span><b>Solid</b>: you know it well enough that it won't need checking for a couple of weeks or more.</span></li>
+</ul>
+
+<h2>Progress</h2>
+<p>Tap <b>Progress</b> at the top for a report on the last week or two: how many days you've practised, how accurate you are on each kind of question, which kana you miss most and which pairs you keep mixing up. <b>Share this report</b> sends it as a message, which is handy if a parent wants to keep an eye on things.</p>
+
+<h2>Where your progress is kept</h2>
+<p>Everything is saved on your phone, inside the browser. There's no account and nothing gets sent anywhere. That does mean a few things:</p>
+<ul>
+<li>Everyone using it on their own phone has their own progress.</li>
+<li>If you change phone or browser, go to <b>Settings → Copy backup</b> on the old one, then paste it into <b>Restore from backup</b> on the new one.</li>
+<li>iPhones can clear data for websites you haven't used in a long while. Adding it to your home screen (see below) mostly stops that, and a backup now and then doesn't hurt.</li>
+</ul>
+
+<h2>Putting it on your phone</h2>
+<p>On an iPhone, open it in Safari, tap <b>Share</b>, then <b>Add to Home Screen</b>. It'll open full screen like a normal app, and after the first visit it works with no signal at all.</p>
+<p>When there's an update it downloads in the background. Close the app and open it again (sometimes twice) and you'll have it.</p>
+
+<h2>Sound</h2>
+<p>If you can't hear anything, check the silent switch on the side of your iPhone first. That catches most people out.</p>
+<p>The voice clips were made with Google's text-to-speech, one clip for each sound. If you're curious, here's <a href="how-the-voice-was-made.html">how I made the voice clips</a>. If you'd rather use your phone's own voice, you can switch in Settings.</p>
+
+<footer>
+<p><b>Thanks to</b></p>
+<ul>
+<li><a href="https://github.com/open-spaced-repetition/ts-fsrs">ts-fsrs</a> from the Open Spaced Repetition project, for the scheduling (MIT licence).</li>
+<li>Google Cloud Text-to-Speech, for the voice (the Chirp 3 HD "Aoede" voice).</li>
+<li>Klee One and Zen Maru Gothic from Google Fonts, for the lettering.</li>
+</ul>
+</footer>
+</main>
+</body>
+</html>
