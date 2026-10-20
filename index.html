@@ -2192,13 +2192,14 @@ ROWS.filter(r=>r.base).forEach(r=>{const base=[...ROWMAP[r.base].k];[...r.k].for
 // ---------- Storage ----------
 const STORE='hiragana-drill-v1';
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fresh(){const t=new Date();t.setDate(t.getDate()+21);return {v:2,rows:[],cards:{},log:[],settings:{target:ymd(t),sound:false}};}
+function fresh(){return {v:2,rows:[],cards:{},log:[],settings:{sound:false}};}
 function load(){
   try{const raw=localStorage.getItem(STORE);if(raw){const s=JSON.parse(raw);if(s&&s.rows&&s.cards)return Object.assign(fresh(),s);}}catch(e){}
   return fresh();
 }
 function save(){try{localStorage.setItem(STORE,JSON.stringify(S));}catch(e){}}
 let S=load();
+delete S.settings.target; // the test-date setting (and its deadline mode) has been removed
 
 // ---------- Scheduling: FSRS ----------
 // Each card keeps an FSRS memory state (stability and difficulty) and is next shown when recall is
@@ -2207,10 +2208,6 @@ let S=load();
 const {fsrs,generatorParameters,createEmptyCard,Rating,State}=window.FSRS;
 // Gaps are capped at 60 days: multiple choice is easier than recalling from nothing, so very long gaps would be over-confident
 const F=fsrs(generatorParameters({request_retention:0.9,maximum_interval:60,enable_fuzz:true}));
-function daysToTarget(){const t=new Date(S.settings.target+'T00:00:00'),d=new Date();d.setHours(0,0,0,0);return Math.round((t-d)/864e5);}
-// With a test 10 days away or less: nothing is scheduled later than the day before, and each card type
-// unlocks after one right answer instead of having to finish its learning steps
-function cram(){const d=daysToTarget();return d>=0&&d<=10;}
 const toCard=c=>Object.assign({},c,{due:new Date(c.due),last_review:c.last_review?new Date(c.last_review):undefined});
 const fromCard=(c,ok)=>Object.assign({},c,{due:c.due.getTime(),last_review:c.last_review?c.last_review.getTime():null,ok});
 function newCard(now=Date.now()){return fromCard(createEmptyCard(new Date(now)),false);}
@@ -2224,18 +2221,15 @@ function rating(type,ok,ms,listen,c){
   if(ms<easy&&c&&c.state===State.Review)return Rating.Easy; // only once a card is past its learning steps
   return Rating.Good;
 }
-function schedule(c,r,now,replay){
-  const out=fromCard(F.next(toCard(c||newCard(now)),new Date(now),r).card,r!==Rating.Again);
-  if(!replay&&cram()){const cap=new Date(S.settings.target+'T04:00:00');cap.setDate(cap.getDate()-1);
-    if(out.due>cap.getTime()&&cap.getTime()>now)out.due=cap.getTime();}
-  return out;
+function schedule(c,r,now){
+  return fromCard(F.next(toCard(c||newCard(now)),new Date(now),r).card,r!==Rating.Again);
 }
 // "I already know these": a right answer counts as two good reviews, so the card skips its learning steps
-function placementGrade(c,ok,now,replay){
-  if(!ok)return schedule(c,Rating.Again,now,replay);
-  return schedule(schedule(c,Rating.Good,now,replay),Rating.Good,now,replay);
+function placementGrade(c,ok,now){
+  if(!ok)return schedule(c,Rating.Again,now);
+  return schedule(schedule(c,Rating.Good,now),Rating.Good,now);
 }
-function strong(id){const c=S.cards[id];return !!c&&(c.state===State.Review||(cram()&&c.ok&&c.reps>0));}
+function strong(id){const c=S.cards[id];return !!c&&c.state===State.Review;}
 function unlocked(it,t){
   if(!S.rows.includes(it.row))return false;
   if(t==='write'&&S.settings.write===false)return false;
@@ -2393,17 +2387,8 @@ function nextDueText(){
   return `More cards will be ready on ${d.toLocaleDateString('en-GB',{weekday:'long'})}.`;
 }
 function paceText(){
-  const t=new Date(S.settings.target+'T00:00:00'),today=new Date();today.setHours(0,0,0,0);
-  const days=Math.round((t-today)/864e5);
-  if(isNaN(days))return '';
-  if(days<0){const st=streak();return st>=2?`You've practised ${st} days running.`:'';}
-  const left=ROWS.length-S.rows.length;
-  let s=days===0?'Your target date is today.':`${days} ${days===1?'day':'days'} to your target date.`;
-  if(left>0&&cram()){const per=Math.ceil(left/Math.max(1,days-1));s+=` ${left} ${left===1?'row':'rows'} still to add, so aim for ${per===1?'one':'about '+per} a day and keep the last day for review. Two or three short sessions a day work best.`;}
-  else if(left>0){const every=Math.max(1,Math.floor((days-5)/left));s+=` ${left} ${left===1?'row':'rows'} still to add, so aim for a new one every ${every===1?'day':every+' days'}.`;}
-  else s+=' Every row is in, so now it\'s all about reviewing.';
-  const st=streak();if(st>=2)s+=` You've practised ${st} days running.`;
-  return s;
+  const st=streak();
+  return st>=2?`You've practised ${st} days running.`:'';
 }
 
 // ---------- Home ----------
@@ -2537,7 +2522,6 @@ function rowSheet(id){
 }
 function settingsSheet(){
   openSheet(`<h2>Settings</h2>
-    <label class="field">Target date<input type="date" id="target" value="${S.settings.target}"></label>
     <label class="toggle"><input type="checkbox" id="wrt" ${S.settings.write!==false?'checked':''}>Include writing practice</label>
     <label class="toggle"><input type="checkbox" id="snd" ${S.settings.sound?'checked':''}>Play sounds automatically</label>
     <label class="field">Voice<select id="voice">
@@ -2737,7 +2721,6 @@ document.addEventListener('click',e=>{
   }
 });
 document.addEventListener('change',e=>{
-  if(e.target.id==='target'&&e.target.value){S.settings.target=e.target.value;save();renderHome();}
   if(e.target.id==='snd'){S.settings.sound=e.target.checked;save();}
   if(e.target.id==='wrt'){S.settings.write=e.target.checked;save();renderHome();}
   if(e.target.id==='voice'){S.settings.voice=e.target.value;save();speak('あ');}
