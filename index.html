@@ -2327,36 +2327,45 @@ function unlockAudio(){
   // iOS only lets audio play without a tap once the player has been started from a tap
   if(audioReady)return;audioReady=true;
   try{player.src=AUDIO_FILE('あ');player.muted=true;
-    const p=player.play();if(p&&p.then)p.then(()=>{player.pause();player.muted=false;},()=>{player.muted=false;audioReady=false;});else player.muted=false;}catch(e){audioReady=false;}
+    // only stop the silent unlock clip, never a real sound that started on the same tap
+    const p=player.play();if(p&&p.then)p.then(()=>{if(player.muted){player.pause();player.muted=false;}},()=>{player.muted=false;audioReady=false;});else player.muted=false;}catch(e){audioReady=false;}
 }
 document.addEventListener('touchend',unlockAudio,{passive:true});
 document.addEventListener('click',unlockAudio);
 const toKata=t=>[...t].map(c=>{const n=c.charCodeAt(0);return n>=0x3041&&n<=0x3096?String.fromCharCode(n+0x60):c;}).join('');
-function speakTTS(text){
-  if(!hasTTS)return;
+function speakTTS(text,onDone){
+  if(!hasTTS)return false;
   try{
     // Katakana makes the phone read は and へ as "ha" and "he", not as the particles "wa" and "e"
     const u=new SpeechSynthesisUtterance(toKata(text));u.lang='ja-JP';u.rate=0.7;
     const vs=speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('ja'));
     const v=vs.find(v=>/premium|enhanced|natural|neural/i.test(v.name))||vs[0];if(v)u.voice=v;
-    speechSynthesis.cancel();speechSynthesis.speak(u);
-  }catch(e){}
+    u.onend=onDone;u.onerror=onDone;
+    speechSynthesis.cancel();speechSynthesis.speak(u);return true;
+  }catch(e){return false;}
 }
-// Sounds that play when a card appears wait until the previous sound has finished, plus a short gap
-let busyUntil=0;
+// soundDone settles once the current sound has finished playing, plus a short gap.
+// Moving to the next card, and a new card's own sound, both wait for it so nothing gets cut off.
+const SOUND_GAP=350,SOUND_MAX=3000;
+let soundDone=Promise.resolve(),endSound=null;
 function autoSpeak(k){
-  const s=sess,p=s&&s.pos,wait=Math.max(0,busyUntil-performance.now());
-  if(!wait)return speak(k);
-  setTimeout(()=>{if(sess===s&&(!s||s.pos===p))speak(k);},wait);
+  const s=sess,p=s&&s.pos;
+  soundDone.then(()=>{if(sess===s&&(!s||s.pos===p))speak(k);});
 }
 function speak(text){
-  busyUntil=performance.now()+1300;
+  if(endSound)endSound(); // a new sound replaces one that's still going
+  let settled=false,resolve;
+  soundDone=new Promise(r=>{resolve=r;});
+  const finish=()=>{if(settled)return;settled=true;if(endSound===finish)endSound=null;setTimeout(resolve,SOUND_GAP);};
+  endSound=finish;
+  setTimeout(finish,SOUND_MAX); // never wait forever if the phone doesn't report the end
   const clip=AUDIO_FILE(text);
   if(clip&&S.settings.voice!=='phone'){
-    try{player.muted=false;player.src=clip;player.currentTime=0;
-      const p=player.play();if(p&&p.catch)p.catch(()=>{});return;}catch(e){}
+    try{player.onended=finish;player.onerror=finish;player.muted=false;player.src=clip;player.currentTime=0;
+      const p=player.play();if(p&&p.catch)p.catch(finish);return soundDone;}catch(e){}
   }
-  speakTTS(text);
+  if(!speakTTS(text,finish))finish();
+  return soundDone;
 }
 const SPK_ICON='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const PLAY_ICON=SPK_ICON.replace('width="22" height="22"','width="56" height="56"');
@@ -2623,7 +2632,10 @@ function answer(chosen){
     const m=document.querySelector('.mute');if(m)m.remove();
   }
   if(type==='read'&&S.settings.sound)speak(k);
-  if(ok){const pos=sess.pos;setTimeout(()=>{if(sess&&sess.pos===pos&&sess.answered)next();},900);return;}
+  if(ok){ // move on after a short pause, but never before the sound has finished
+    const pos=sess.pos;
+    Promise.all([new Promise(r=>setTimeout(r,900)),soundDone]).then(()=>{if(sess&&sess.pos===pos&&sess.answered)next();});
+    return;}
   const c=BY[chosen];
   const again=sess.mode==='placement'?'It will come up in your reviews.':'You\'ll see it again in a moment.';
   document.getElementById('fb').innerHTML=`<p><span class="kana">${k}</span> is <b>${it.r}</b>. ${dk?again:`<span class="kana">${c.k}</span> is <b>${c.r}</b>.`}</p>
@@ -2686,7 +2698,7 @@ document.addEventListener('click',e=>{
       if(confirm('Remove this row from your chart? Its progress is kept if you add it back.')){S.rows=S.rows.filter(r=>r!==row);save();closeSheet();renderHome();}
       break;
     case 'speak':speak(b.dataset.k);break;
-    case 'testvoice':['は','へ','を','ん'].forEach((k,i)=>setTimeout(()=>speak(k),i*900));break;
+    case 'testvoice':(async()=>{for(const k of ['は','へ','を','ん'])await speak(k);})();break;
     case 'answer':answer(b.dataset.k);break;
     case 'next':next();break;
     case 'nosound':sess.noSound=true;renderCard();toast('Sound off for this session');break;
