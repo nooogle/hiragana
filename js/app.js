@@ -14,6 +14,7 @@ import {editHint,setHint} from './hints.js';
 import {renderHome} from './screens/home.js';
 import {renderReport,reportText,copyText} from './screens/report.js';
 import {startSession,answer,next,introOk,noSound,clearDrawing,checkWriting,selfGrade} from './screens/session.js';
+import './keys.js'; // keyboard shortcuts for computers (sets itself up when loaded)
 
 document.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b)return;

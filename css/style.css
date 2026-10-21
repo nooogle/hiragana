@@ -141,3 +141,17 @@ textarea{width:100%;min-height:70px;border-radius:12px;border:1.5px solid var(--
 .chip .kana{font-size:1.6rem}
 .chip small{color:var(--muted);font-size:.85rem}
 @media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+
+/* Keyboard hints, only on computers (a mouse or trackpad that can hover). Phones never see these. */
+@media (hover:hover) and (pointer:fine){
+  .opts{counter-reset:opt}
+  .opt{position:relative}
+  .opt::before{counter-increment:opt;content:counter(opt);position:absolute;top:6px;left:10px;font-family:var(--ui);font-size:.72rem;font-weight:700;opacity:.5}
+  .dk::after,[data-act="next"]::after,[data-act="introok"]::after,[data-act="check"]::after,[data-act="self"]::after{
+    display:inline-block;margin-left:8px;padding:0 6px;border:1px solid currentColor;border-radius:5px;
+    font-family:var(--ui);font-size:.7rem;font-weight:700;line-height:1.5;opacity:.55;vertical-align:1px}
+  .dk::after{content:"0"}
+  [data-act="next"]::after,[data-act="introok"]::after,[data-act="check"]::after{content:"Enter"}
+  [data-act="self"][data-ok="1"]::after{content:"Y"}
+  [data-act="self"][data-ok="0"]::after{content:"N"}
+}

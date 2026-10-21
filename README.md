@@ -18,6 +18,7 @@ hiragana/
     queues.js           which cards come up: reviews, weakest, run through everything
     sound.js            voice clips and phone speech, and waiting for sounds to finish
     hints.js            the suggested hints, hint boxes and the hint editor
+    keys.js             keyboard shortcuts for computers (each key presses a button on screen)
     sheets.js           pop-up panels: row options and Settings
     ui.js               shared bits: icons, toasts, chart colours, streak, "next cards ready" text
     drawing.js          the finger-drawing pad on writing cards
@@ -26,6 +27,8 @@ hiragana/
       session.js        showing cards, answers, feedback, the done screen
       report.js         the Progress screen and its share text
   vendor/               the ts-fsrs library, untouched (MIT licence)
+  icons/                app icons for iPhone, Android and desktop, and the favicons
+  manifest.webmanifest  the app's name, icons and colours, used when it's installed
   audio/                one MP3 per sound, named by romaji
   sw.js                 the offline cache (generated, see below)
   how-it-works.html     the user guide
