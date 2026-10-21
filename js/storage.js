@@ -4,7 +4,9 @@
 // Other modules import S and read or change its properties (S.cards, S.rows...). Only this module may
 // replace S with a whole new object, through replaceState(); importers then see the new one automatically.
 
-const STORE='hiragana-drill-v1';
+// Previews of work in progress live under /preview/ on the same site; they keep separate progress
+// so trying something out can never touch the real thing.
+const STORE='hiragana-drill-v1'+(location.pathname.includes('/preview/')?'-preview':'');
 
 export function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 export function fresh(){return {v:2,rows:[],cards:{},log:[],hints:{},settings:{sound:false}};}

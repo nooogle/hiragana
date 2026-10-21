@@ -52,7 +52,7 @@ Then open <http://localhost:8000/hiragana/>. Progress there is separate from the
 `sw.js` keeps a copy of every file on the phone so the app works with no signal. Pages, scripts and styles are always fetched fresh when there's signal, so ordinary code changes need nothing extra. But **if you add, rename or remove a file, or change a voice clip**, rebuild the list and give it a new version name:
 
 ```bash
-python3 tools/make_sw.py hiragana hiragana/sw.js hiragana-2026-10-21b
+python3 tools/make_sw.py hiragana hiragana/sw.js 2026-10-21c
 ```
 
 ## Saved progress
