@@ -58,6 +58,17 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .tag{width:40px;flex:none;font-size:.82rem;font-weight:700;color:var(--accent);text-align:center}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:16px 2px 0}
 .howlink{margin:22px 2px 0;font-size:.95rem}
+.mn{width:100%;margin-top:14px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:10px 14px 8px;text-align:left}
+.mn+.mn{margin-top:8px}
+.mn.mine{border-left-color:var(--ok)}
+.mn .lbl{display:block;font-size:.78rem;font-weight:700;color:var(--muted);margin-bottom:2px}
+.mn p{margin:0;line-height:1.5}
+.mn .k{font-family:var(--kana);font-size:1.45rem;margin-right:8px;vertical-align:-2px}
+.mnedit{background:none;border:0;padding:6px 0 2px;color:var(--accent);font-weight:700;font-size:.85rem}
+.sugg{background:var(--card);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:12px 0 4px;font-size:.92rem;color:var(--muted);line-height:1.5}
+.hintkeys{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 6px}
+.hintkeys button{font-family:var(--kana);font-size:1.6rem;width:52px;height:52px;border-radius:12px;border:1.5px solid var(--line);background:var(--card)}
+.hintkeys button.mine{border-color:var(--ok)}
 .howlink a,.sheet a{color:var(--accent);font-weight:700;text-underline-offset:3px}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:5px}
 
@@ -2194,7 +2205,7 @@ ROWS.filter(r=>r.base).forEach(r=>{const base=[...ROWMAP[r.base].k];[...r.k].for
 // ---------- Storage ----------
 const STORE='hiragana-drill-v1';
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function fresh(){return {v:2,rows:[],cards:{},log:[],settings:{sound:false}};}
+function fresh(){return {v:2,rows:[],cards:{},log:[],hints:{},settings:{sound:false}};}
 function load(){
   try{const raw=localStorage.getItem(STORE);if(raw){const s=JSON.parse(raw);if(s&&s.rows&&s.cards)return Object.assign(fresh(),s);}}catch(e){}
   return fresh();
@@ -2371,6 +2382,82 @@ const SPK_ICON='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stro
 const PLAY_ICON=SPK_ICON.replace('width="22" height="22"','width="56" height="56"');
 // "Don't know" counts as a miss, so the card comes back soon instead of being rewarded for a lucky guess
 const DK='<button class="dk" data-act="answer" data-k="?">Don\'t know</button>';
+
+// ---------- Memory hints ----------
+// Suggested hints for the basic kana. The ones with dakuten or handakuten get a hint built from their base kana.
+// Anyone can replace a hint with their own; those are kept in S.hints and saved with the rest of the progress.
+const HINTS={
+'あ':'An apple: the cross is its stalk and leaf, the big swirl is the apple. Compare お, which has an extra flick top right.',
+'い':'Two eels standing side by side.',
+'う':'A little hat over a curve, like someone doubled over going "Ooh, my tummy!"',
+'え':'A bird with a feather on its head and a zig-zag tail, saying "Eh?"',
+'お':'Like あ, but with an extra flick at the top right. "Oh! There\'s an extra bit."',
+'か':'Someone doing karate: a bent arm and a little flick for the "Ka!"',
+'き':'A key: the two crossbars are the teeth and the curve at the bottom is the handle.',
+'く':'A bird\'s beak open wide, going "coo".',
+'け':'A tall stick next to a cross with a long tail, like a capital K melting into an e.',
+'こ':'Two short lines lying together, a cosy couple.',
+'さ':'A cross over a curve that opens to the right, like a sickle swishing through grass. Compare ち, which bulges out the other way.',
+'し':'A fishing hook, or one long strand of her hair: "she".',
+'す':'Someone on a rope swing, looping round once: "swing", "su".',
+'せ':'A wide-open mouth with one sharp tooth, ready to "say" something.',
+'そ':'A zig-zag thread ending in a curly needle: "sew".',
+'た':'A little t with two strokes beside it that look a bit like an a. t + a = ta.',
+'ち':'Looks like a 5 with a cross at the top. High five, cheers! Its curve bulges right, the opposite way to さ.',
+'つ':'A big wave rolling over: tsunami.',
+'て':'An arm reaching out with the hand curling round. Te is Japanese for hand.',
+'と':'A big toe with a splinter sticking out of it.',
+'な':'A cross with a knot tied underneath. Knot, "na".',
+'に':'こ with a stick in front, like a knee bent beside two steps.',
+'ぬ':'Noodles lifted on chopsticks, with a loop at the end. め is the same but with no loop.',
+'ね':'A cat (neko) sitting with its tail curled round at the end.',
+'の':'One quick swirl, like a no-entry sign drawn in a hurry. No!',
+'は':'A stick next to a cross with a loop, like a capital H joined to an a. ほ has one extra line on top.',
+'ひ':'A big grinning mouth: "hee hee!"',
+'ふ':'Mount Fuji, with little clouds puffing out on each side.',
+'へ':'A small hill: "Hey, a hill!"',
+'ほ':'Like は with an extra line on top. Two lines on the right: "ho ho".',
+'ま':'A stick with two bars ending in a loop. も also has two bars but ends with a curl, not a loop.',
+'み':'A swirly ribbon with a long tail crossing it, waving "Look at me!"',
+'む':'A cow\'s head with one horn sticking out: "moo".',
+'め':'An eye. Me is Japanese for eye. No loop at the end, unlike ぬ.',
+'も':'A fish hook with two bars across it: catch more fish.',
+'や':'A yak\'s head with its horns sticking up.',
+'ゆ':'A curved road with a line through it, like a U-turn sign: "you turn".',
+'よ':'A yo-yo dangling on its string.',
+'ら':'A little rabbit with one ear up.',
+'り':'Two reeds by a river, one longer than the other.',
+'る':'A route that ends in a loop. ろ is the same road with no loop.',
+'れ':'A leg kicking out straight. ね curls into a tail and わ curves round smoothly.',
+'ろ':'A road with no loop at the end. る has the loop.',
+'わ':'A stick with a smooth round back, like someone waving. No curl at the end, unlike ね.',
+'を':'Someone bent right over saying "Whoa!" Said just like お.',
+'ん':'Looks like a lowercase n with a tail flicking up.'
+};
+// Base kana and sound change for the dakuten (two little marks) and handakuten (little circle) rows
+ROWS.filter(r=>r.base).forEach(r=>{const base=[...ROWMAP[r.base].k];[...r.k].forEach((k,i)=>{
+  const b=base[i],br=BY[b].r,kr=BY[k].s,circle=r.id==='p';
+  HINTS[k]=k==='ぢ'?'ち with two little marks. It sounds just like じ, and you won\'t see it very often.'
+    :k==='づ'?'つ with two little marks. It sounds just like ず, and you won\'t see it very often.'
+    :`${b} with ${circle?'a little circle':'two little marks'}, so ${br} becomes ${kr}.`;});});
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hintFor(k){const mine=S.hints&&S.hints[k];return mine?{text:mine,mine:true}:{text:HINTS[k]||'',mine:false};}
+// One hint box; showKana adds the kana in front (used when two hints are shown together)
+function hintBox(k,showKana){
+  const h=hintFor(k);if(!h.text)return '';
+  return `<div class="mn${h.mine?' mine':''}" data-hk="${k}"><span class="lbl">${h.mine?'Your hint':'Hint'}</span><p>${showKana?`<span class="k">${k}</span>`:''}${esc(h.text)}</p><button class="mnedit" data-act="edithint" data-k="${k}">${h.mine?'Change your hint':'Write your own hint'}</button></div>`;
+}
+function refreshHints(k){document.querySelectorAll(`[data-hk="${k}"]`).forEach(el=>{const two=!!el.querySelector('.k');el.outerHTML=hintBox(k,two);});}
+let hintFromRow=null;
+function hintSheet(k){
+  const h=hintFor(k);
+  openSheet(`<h2>Your hint for <span class="kana" style="font-size:1.6rem">${k}</span> (${BY[k].r})</h2>
+    <textarea id="hinttext" placeholder="Write something that helps you remember it">${h.mine?esc(h.text):''}</textarea>
+    <div class="sugg"><b>Suggested:</b> ${esc(HINTS[k]||'')}</div>
+    <button class="primary" data-act="savehint" data-k="${k}">Save</button>
+    ${h.mine?`<button class="secondary" data-act="resethint" data-k="${k}">Use the suggested hint</button>`:''}
+    <button class="secondary" data-act="close">Cancel</button>`);
+}
 function spkBtn(k){return canSpeak?`<button class="spk" data-act="speak" data-k="${k}" aria-label="Play sound">${SPK_ICON}</button>`:'';}
 function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
 function level(it){
@@ -2519,7 +2606,9 @@ function closeSheet(){const s=document.getElementById('scrim');if(s)s.remove();}
 function rowSheet(id){
   const row=ROWMAP[id],on=S.rows.includes(id);
   if(on){
-    openSheet(`<h2>The ${row.k[0]} row</h2><p class="preview kana">${row.k}</p>
+    openSheet(`<h2>The ${row.k[0]} row</h2>
+      <p class="sub" style="margin-bottom:6px">Tap a kana to see or change its hint.</p>
+      <div class="hintkeys">${[...row.k].map(k=>`<button class="${S.hints[k]?'mine':''}" data-act="edithint" data-k="${k}" aria-label="Hint for ${BY[k].r}">${k}</button>`).join('')}</div>
       <button class="primary" data-act="rowpractice" data-row="${id}">Practise this row</button>
       <button class="secondary" data-act="rowremove" data-row="${id}">Remove from my chart</button>
       <button class="secondary" data-act="close">Cancel</button>`);
@@ -2578,7 +2667,7 @@ function renderCard(){
   sess.answered=false;sess.t0=performance.now();sess.listen=false;
   if(type==='read'&&!S.cards[id]&&sess.mode==='review'){
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">New one to learn</p><div class="sq"><span class="big">${k}</span></div>
-      <p class="reveal">${it.r}</p>${spkBtn(k)}
+      <p class="reveal">${it.r}</p>${spkBtn(k)}${hintBox(k)}
       <p class="hint">Practise the strokes in your course app too. You'll be tested on this in a moment.</p>
       <button class="primary" data-act="introok">Got it</button></div>`;
     if(S.settings.sound)autoSpeak(k);
@@ -2639,7 +2728,8 @@ function answer(chosen){
   const c=BY[chosen];
   const again=sess.mode==='placement'?'It will come up in your reviews.':'You\'ll see it again in a moment.';
   document.getElementById('fb').innerHTML=`<p><span class="kana">${k}</span> is <b>${it.r}</b>. ${dk?again:`<span class="kana">${c.k}</span> is <b>${c.r}</b>.`}</p>
-    ${(type==='read'||sess.listen)&&canSpeak?spkBtn(k):''}<button class="primary" data-act="next" style="margin-top:12px">Next</button>`;
+    ${(type==='read'||sess.listen)&&canSpeak?spkBtn(k):''}${hintBox(k,!dk)}${dk?'':hintBox(chosen,true)}<button class="primary" data-act="next" style="margin-top:14px">Next</button>`;
+  {const nx=document.querySelector('#fb [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
 }
 function next(){if(!sess)return;sess.pos++;renderCard();}
 function renderDone(){
@@ -2716,9 +2806,21 @@ document.addEventListener('click',e=>{
         document.getElementById('ans').scrollIntoView({block:'nearest'});}
       document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="self" data-ok="0">Not quite</button><button class="primary" data-act="self" data-ok="1">Got it</button>`;
       break;
-    case 'self':
+    case 'self':{
       if(sess.answered)return;sess.answered=true;
-      record(sess.queue[sess.pos],b.dataset.ok==='1');next();break;
+      const ok=b.dataset.ok==='1',k=sess.queue[sess.pos].split('|')[0];
+      record(sess.queue[sess.pos],ok);
+      if(ok){next();break;}
+      // "Not quite": show the hint before moving on
+      document.getElementById('wbtns').outerHTML=`${hintBox(k)}<button class="primary" data-act="next" style="margin-top:14px">Next</button>`;
+      break;}
+    case 'edithint':hintFromRow=b.closest('.hintkeys')?BY[b.dataset.k].row:null;hintSheet(b.dataset.k);break;
+    case 'savehint':case 'resethint':{
+      const k=b.dataset.k,t=a==='savehint'?document.getElementById('hinttext').value.trim():'';
+      if(t)S.hints[k]=t;else delete S.hints[k];
+      save();closeSheet();refreshHints(k);toast(t?'Hint saved':'Using the suggested hint');
+      if(hintFromRow)rowSheet(hintFromRow); // back to the row it was opened from
+      break;}
     case 'copy':{
       const txt=JSON.stringify(S);
       const fallback=()=>{const ta=document.getElementById('restore');ta.value=txt;ta.select();toast('Select all and copy');};
