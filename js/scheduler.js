@@ -36,10 +36,17 @@ function placementGrade(c,ok,now){
   return schedule(schedule(c,Rating.Good,now),Rating.Good,now);
 }
 
-// A card type unlocks once the one before it (read, then recall, then write) is past its learning steps
+/** True when the user has picked which card types to practise, instead of letting them unlock in turn. */
+export const isManual=()=>S.settings.mode==='manual';
+/** The card types ticked in manual mode (all of them if the setting is missing). */
+export function manualTypes(){const t=S.settings.types;return Array.isArray(t)&&t.length?TYPES.filter(x=>t.includes(x)):TYPES;}
+
+// Automatic: a card type unlocks once the one before it (read, then recall, then write) is past its learning steps.
+// Manual: just the ticked types, for every kana in the chosen rows, with nothing to unlock.
 function strong(id){const c=S.cards[id];return !!c&&c.state===State.Review;}
 export function unlocked(it,t){
   if(!S.rows.includes(it.row))return false;
+  if(isManual())return manualTypes().includes(t);
   if(t==='write'&&S.settings.write===false)return false;
   if(t==='read'||S.cards[it.k+'|'+t])return true; // once a card type has started it stays in
   return strong(it.k+'|'+(t==='recall'?'read':'recall'));

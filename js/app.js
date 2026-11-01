@@ -83,6 +83,17 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
   if(e.target.id==='snd'){S.settings.sound=e.target.checked;save();}
   if(e.target.id==='wrt'){S.settings.write=e.target.checked;save();renderHome();}
+  if(e.target.name==='pmode'){
+    const manual=e.target.value==='manual';
+    S.settings.mode=manual?'manual':'auto';save();
+    document.getElementById('pauto').hidden=manual;document.getElementById('pmanual').hidden=!manual;
+    renderHome();
+  }
+  if(e.target.name==='ptype'){
+    const ticked=[...document.querySelectorAll('input[name="ptype"]:checked')].map(i=>i.value);
+    if(!ticked.length){e.target.checked=true;toast('Tick at least one');return;}
+    S.settings.types=ticked;save();renderHome();
+  }
   if(e.target.id==='voice'){S.settings.voice=e.target.value;save();speak('あ');}
 });
 

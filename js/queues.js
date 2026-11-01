@@ -2,7 +2,7 @@
 
 import {S} from './storage.js';
 import {KANA,BY} from './deck.js';
-import {activeCards,cardScore} from './scheduler.js';
+import {activeCards,cardScore,isManual} from './scheduler.js';
 
 export function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -40,10 +40,11 @@ export function buildPractice(rowId){
   return spread(ids);
 }
 
-/** One card for every hiragana already started, shuffled; runs as practice so it doesn't disturb the schedule. */
+/** One card for every hiragana already started (in manual mode, every hiragana in the chosen rows), shuffled;
+ *  runs as practice so it doesn't disturb the schedule. */
 export function buildRunThrough(){
-  const ids=[];
-  KANA.forEach(it=>{const started=activeCards().filter(id=>id.startsWith(it.k+'|')&&S.cards[id]);
-    if(started.length)ids.push(started[Math.floor(Math.random()*started.length)]);});
+  const ids=[],active=activeCards(),manual=isManual();
+  KANA.forEach(it=>{const pick=active.filter(id=>id.startsWith(it.k+'|')&&(manual||S.cards[id]));
+    if(pick.length)ids.push(pick[Math.floor(Math.random()*pick.length)]);});
   return spread(ids);
 }

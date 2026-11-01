@@ -4,6 +4,7 @@
 import {S} from './storage.js';
 import {ROWMAP,BY} from './deck.js';
 import {hasTTS} from './sound.js';
+import {isManual,manualTypes} from './scheduler.js';
 
 export function openSheet(html){
   closeSheet();
@@ -33,9 +34,24 @@ export function rowSheet(id){
     <button class="secondary" data-act="close">Cancel</button>`);
 }
 
+// The card types offered in manual mode, in the order they're listed
+const MANUAL_TYPES=[['write','Writing'],['recall','Romaji or sound → hiragana'],['read','Hiragana → romaji']];
+
 export function settingsSheet(){
+  const manual=isManual(),types=manualTypes();
   openSheet(`<h2>Settings</h2>
-    <label class="toggle"><input type="checkbox" id="wrt" ${S.settings.write!==false?'checked':''}>Include writing practice</label>
+    <h3>What to practise</h3>
+    <label class="toggle"><input type="radio" name="pmode" value="auto" ${manual?'':'checked'}>Automatic</label>
+    <div id="pauto" ${manual?'hidden':''}>
+      <p class="sub">Reading first, then picking the kana from romaji, then writing, each unlocking as you get the one before.</p>
+      <label class="toggle"><input type="checkbox" id="wrt" ${S.settings.write!==false?'checked':''}>Include writing practice</label>
+    </div>
+    <label class="toggle"><input type="radio" name="pmode" value="manual" ${manual?'checked':''}>Manual</label>
+    <div id="pmanual" ${manual?'':'hidden'}>
+      <p class="sub">Only the ones you tick, for every kana in your chosen rows.</p>
+      ${MANUAL_TYPES.map(([t,name])=>`<label class="toggle"><input type="checkbox" name="ptype" value="${t}" ${types.includes(t)?'checked':''}>${name}</label>`).join('')}
+    </div>
+    <h3>Sound</h3>
     <label class="toggle"><input type="checkbox" id="snd" ${S.settings.sound?'checked':''}>Play sounds automatically</label>
     <label class="field">Voice<select id="voice">
       <option value="rec" ${S.settings.voice!=='phone'?'selected':''}>Recorded voice (clearest)</option>

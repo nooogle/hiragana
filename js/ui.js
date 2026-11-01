@@ -2,7 +2,7 @@
 
 import {S,ymd} from './storage.js';
 import {TYPES} from './deck.js';
-import {activeCards,cardScore} from './scheduler.js';
+import {activeCards,cardScore,isManual,manualTypes} from './scheduler.js';
 import {canSpeak} from './sound.js';
 
 /** The one box on the page that every screen is drawn into. */
@@ -22,8 +22,8 @@ export function toast(msg){const t=document.createElement('div');t.className='to
 /** Colour level for a kana on the chart: -1 not added, 1 learning, 2 shaky, 3 good, 4 solid. */
 export function level(it){
   if(!S.rows.includes(it.row))return -1;
-  // With writing switched off, score on reading and recall only, scaled so "solid" is still reachable
-  const ts=S.settings.write===false?['read','recall']:TYPES;
+  // Score only the card types being practised (in manual mode, the ticked ones), scaled so "solid" is still reachable
+  const ts=isManual()?manualTypes():S.settings.write===false?['read','recall']:TYPES;
   const avg=ts.reduce((a,t)=>a+cardScore(it.k+'|'+t),0)/ts.length;
   return avg<1.5?1:avg<2.5?2:avg<3.5?3:4;
 }
