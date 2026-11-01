@@ -22,11 +22,13 @@ hiragana/
     sheets.js           pop-up panels: row options and Settings
     ui.js               shared bits: icons, toasts, chart colours, streak, "next cards ready" text
     drawing.js          the finger-drawing pad on writing cards
+    strokes.js          the stroke order animation shown after Check on writing cards
     screens/
       home.js           the chart screen
       session.js        showing cards, answers, feedback, the done screen
       report.js         the Progress screen and its share text
-  vendor/               the ts-fsrs library, untouched (MIT licence)
+  vendor/               the ts-fsrs library, untouched (MIT licence), and the stroke order data
+                        from KanjiVG (CC BY-SA 3.0, built by tools/make_strokes.py)
   icons/                app icons for iPhone, Android and desktop, and the favicons
   manifest.webmanifest  the app's name, icons and colours, used when it's installed
   audio/                one MP3 per sound, named by romaji

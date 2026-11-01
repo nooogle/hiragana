@@ -1,0 +1,9 @@
+kanjivg-hiragana.js holds stroke order data taken from KanjiVG (release r20260714).
+
+KanjiVG: https://kanjivg.tagaini.net/  (source: https://github.com/KanjiVG/kanjivg)
+Copyright (C) 2009-2026 Ulrich Apel.
+
+KanjiVG is distributed under the Creative Commons Attribution-Share Alike 3.0 licence.
+kanjivg-hiragana.js is an adaptation of it (only the stroke paths and stroke number positions
+were kept, unchanged), and is shared under the same licence:
+https://creativecommons.org/licenses/by-sa/3.0/

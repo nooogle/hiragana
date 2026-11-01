@@ -9,6 +9,7 @@ import {canSpeak,speak,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
+import {playStrokes} from '../strokes.js';
 
 export let sess=null;
 export function endSession(){sess=null;}
@@ -129,24 +130,38 @@ export function noSound(){sess.noSound=true;renderCard();toast('Sound off for th
 // ----- Writing cards -----
 export function clearDrawing(){const cv=document.getElementById('cv');if(cv&&cv.clear)cv.clear();}
 
-/** "Check" on a writing card: show the right kana over the drawing and in its own box, then ask for a self-mark. */
+/** "Check" on a writing card: show the right kana over the drawing, and its stroke order animated in its own box,
+ *  then ask for a self-mark. Tapping the box plays the animation again. */
 export function checkWriting(){
   document.getElementById('model').classList.add('show');
   document.getElementById('cv').dataset.locked='1';
   const k=sess.queue[sess.pos].split('|')[0];
-  document.getElementById('wbtns').insertAdjacentHTML('beforebegin',`<div class="ans" id="ans" role="img" aria-label="Correct answer: ${k}"><span class="kana">${k}</span></div>`);
+  document.getElementById('wbtns').insertAdjacentHTML('beforebegin',`<button class="ans" id="ans" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"><span class="kana">${k}</span></button>`);
+  replayStrokes();
   document.getElementById('ans').scrollIntoView({block:'nearest'});
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="self" data-ok="0">Not quite</button><button class="primary" data-act="self" data-ok="1">Got it</button>`;
 }
 
-/** The self-mark on a writing card. */
+/** Play the stroke order animation in the answer box (if the stroke data is missing, the plain kana stays). */
+export function replayStrokes(){
+  const box=document.getElementById('ans');
+  if(box&&sess)playStrokes(box,sess.queue[sess.pos].split('|')[0]);
+}
+
+/** The self-mark on a writing card. Either way, offer more goes at it before moving on. */
 export function selfGrade(ok){
   if(sess.answered)return;sess.answered=true;
   const k=sess.queue[sess.pos].split('|')[0];
   record(sess.queue[sess.pos],ok);
-  if(ok){next();return;}
-  // "Not quite": show the hint before moving on
-  document.getElementById('wbtns').outerHTML=`${hintBox(k)}<button class="primary" data-act="next" style="margin-top:14px">Next</button>`;
+  // "Not quite" also shows the hint
+  document.getElementById('wbtns').outerHTML=`${ok?'':hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
+  {const nx=document.querySelector('#wbtns [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
+}
+
+/** "Practise": wipe the drawing, but leave the faint kana showing, to draw over it again. Doesn't change the mark. */
+export function practiseWriting(){
+  const cv=document.getElementById('cv');if(!cv)return;
+  cv.clear();delete cv.dataset.locked;
 }
 
 function renderDone(){

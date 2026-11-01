@@ -5,7 +5,7 @@
 //   1-4          pick an answer          0, D or ?   Don't know
 //   Enter/Space  Next, Got it, Check, or the main button on the home and done screens
 //   Y / N        Got it / Not quite on writing cards
-//   P or R       play the sound again    C           clear the drawing
+//   P or R       play the sound again    C           clear the drawing (or Practise, after marking)
 //   Esc          close a pop-up panel
 
 import {closeSheet} from './sheets.js';
@@ -34,6 +34,6 @@ document.addEventListener('keydown',e=>{
   else if(k==='y')done=press('[data-act="self"][data-ok="1"]');
   else if(k==='n')done=press('[data-act="self"][data-ok="0"]');
   else if(k==='p'||k==='r')done=press('.play')||press('.spk');
-  else if(k==='c')done=press('[data-act="clear"]');
+  else if(k==='c')done=press('[data-act="clear"]')||press('[data-act="practise"]');
   if(done)e.preventDefault(); // e.g. stop Space scrolling the page
 });

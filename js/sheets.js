@@ -64,7 +64,7 @@ export function settingsSheet(){
     <button class="secondary" data-act="copy">Copy backup</button>
     <textarea id="restore" placeholder="Paste a backup here"></textarea>
     <button class="secondary" data-act="restore">Restore from backup</button>
-    <p class="sub" style="font-size:.8rem;margin-top:16px">Reviews are scheduled with FSRS (ts-fsrs, MIT licence), aiming for 90% recall. <a href="how-it-works.html">How it all works</a></p>
+    <p class="sub" style="font-size:.8rem;margin-top:16px">Reviews are scheduled with FSRS (ts-fsrs, MIT licence), aiming for 90% recall. Stroke order from <a href="https://kanjivg.tagaini.net/">KanjiVG</a> by Ulrich Apel (CC BY-SA 3.0). <a href="how-it-works.html">How it all works</a></p>
     <button class="danger" data-act="reset">Reset all progress</button>
     <button class="secondary" data-act="close">Done</button>`);
 }
