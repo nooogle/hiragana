@@ -107,6 +107,31 @@ canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:n
 .btns2{display:flex;gap:10px;width:100%;margin-top:18px}
 .btns2 button{margin:0;flex:1}
 .stage > .primary{margin-top:18px}
+a.primary,.sheet a.primary{color:var(--accent-ink);text-align:center;text-decoration:none}
+
+/* One-time tips: a dark bubble just below the thing it explains, its arrow pointing up at it */
+.tip{position:relative;width:100%;margin:14px 0 4px;padding:12px 14px 6px;border-radius:14px;background:var(--ink);color:var(--paper);font-size:.9rem;line-height:1.45;text-align:left}
+.tip::before{content:"";position:absolute;top:-8px;left:50%;margin-left:-8px;border:8px solid transparent;border-top:0;border-bottom-color:var(--ink)}
+.tip p{margin:0}
+.tip .link{display:block;margin-left:auto;color:var(--paper);text-decoration:underline;text-underline-offset:3px}
+
+/* Welcome screens: slides side by side, swiped with the finger (scroll snapping) or moved on with Next */
+.welcome{display:flex;flex-direction:column;min-height:calc(100svh - 60px);padding-top:4px}
+.wskip{align-self:flex-end}
+.wslides{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;flex:1;margin:0 -18px}
+.wslides::-webkit-scrollbar{display:none}
+.wslide{flex:0 0 100%;scroll-snap-align:center;padding:12px 22px 0}
+.wslide h2{font-size:1.5rem;margin:24px 0 10px;line-height:1.3}
+.wslide p,.wslide li{color:var(--muted);line-height:1.6}
+.wslide ul{padding-left:20px;margin:0 0 12px}
+.wslide li b,.wslide p b{color:var(--ink)}
+.wbig{font-size:7rem;text-align:center;color:var(--accent);line-height:1;margin-top:28px}
+.wbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:16px}
+.wbox p{margin:4px 0 0}
+.wnote{font-size:.85rem;margin-top:10px}
+.wdots{display:flex;gap:8px;justify-content:center;margin:16px 0}
+.wdots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.wdots i.on{background:var(--accent)}
 
 .scrim{position:fixed;inset:0;background:rgba(10,14,22,.45);display:flex;align-items:flex-end;justify-content:center;z-index:10}
 .sheet{background:var(--paper);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px));max-height:90%;overflow:auto}

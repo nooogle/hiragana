@@ -10,6 +10,7 @@ import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
 import {playStrokes} from '../strokes.js';
+import {showTips} from '../tips.js';
 
 export let sess=null;
 export function endSession(){sess=null;}
@@ -49,6 +50,7 @@ function renderCard(){
       <p class="hint">Practise the strokes in your course app too. You'll be tested on this in a moment.</p>
       <button class="primary" data-act="introok">Got it</button></div>`;
     if(S.settings.sound)autoSpeak(k,stillHere());
+    showTips();
     return;
   }
   if(type==='read'){
@@ -76,6 +78,7 @@ function renderCard(){
     setupCanvas(document.getElementById('cv'));
     if(S.settings.sound)autoSpeak(k,stillHere());
   }
+  showTips();
 }
 
 // Grade the answer, and bring a missed card back a few cards later in the same session
@@ -106,12 +109,14 @@ export function answer(chosen){
   if(ok){ // move on after a short pause, but never before the sound has finished
     const pos=sess.pos;
     Promise.all([new Promise(r=>setTimeout(r,900)),whenSoundDone()]).then(()=>{if(sess&&sess.pos===pos&&sess.answered)next();});
+    showTips();
     return;}
   const c=BY[chosen];
   const again=sess.mode==='placement'?'It will come up in your reviews.':'You\'ll see it again in a moment.';
   document.getElementById('fb').innerHTML=`<p><span class="kana">${k}</span> is <b>${it.r}</b>. ${dk?again:`<span class="kana">${c.k}</span> is <b>${c.r}</b>.`}</p>
     ${(type==='read'||sess.listen)&&canSpeak?spkBtn(k):''}${hintBox(k,!dk)}${dk?'':hintBox(chosen,true)}<button class="primary" data-act="next" style="margin-top:14px">Next</button>`;
   {const nx=document.querySelector('#fb [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  showTips();
 }
 
 export function next(){if(!sess)return;sess.pos++;renderCard();}
@@ -140,6 +145,7 @@ export function checkWriting(){
   replayStrokes();
   document.getElementById('ans').scrollIntoView({block:'nearest'});
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="self" data-ok="0">Not quite</button><button class="primary" data-act="self" data-ok="1">Got it</button>`;
+  showTips();
 }
 
 /** Play the stroke order animation in the answer box (if the stroke data is missing, the plain kana stays). */
@@ -156,6 +162,7 @@ export function selfGrade(ok){
   // "Not quite" also shows the hint
   document.getElementById('wbtns').outerHTML=`${ok?'':hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
   {const nx=document.querySelector('#wbtns [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  showTips();
 }
 
 /** "Practise": wipe the drawing, but leave the faint kana showing, to draw over it again. Doesn't change the mark. */

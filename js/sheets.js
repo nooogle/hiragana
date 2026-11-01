@@ -1,8 +1,8 @@
-// Pop-up panels that slide up from the bottom: row options and Settings.
+// Pop-up panels that slide up from the bottom: row options, Settings and Send feedback.
 // (The hint editor is also a sheet, and lives in hints.js.)
 
 import {S} from './storage.js';
-import {ROWMAP,BY} from './deck.js';
+import {ROWMAP,BY,KANA} from './deck.js';
 import {hasTTS} from './sound.js';
 import {isManual,manualTypes} from './scheduler.js';
 
@@ -40,6 +40,10 @@ const MANUAL_TYPES=[['write','Writing'],['recall','Romaji or sound → hiragana'
 export function settingsSheet(){
   const manual=isManual(),types=manualTypes();
   openSheet(`<h2>Settings</h2>
+    <h3>Help and feedback</h3>
+    <button class="secondary" data-act="feedback">Send feedback</button>
+    <button class="secondary" data-act="welcome">Show the welcome again</button>
+    <button class="secondary" data-act="tipsreset">Show tips again</button>
     <h3>What to practise</h3>
     <label class="toggle"><input type="radio" name="pmode" value="auto" ${manual?'':'checked'}>Automatic</label>
     <div id="pauto" ${manual?'hidden':''}>
@@ -67,4 +71,34 @@ export function settingsSheet(){
     <p class="sub" style="font-size:.8rem;margin-top:16px">Reviews are scheduled with FSRS (ts-fsrs, MIT licence), aiming for 90% recall. Stroke order from <a href="https://kanjivg.tagaini.net/">KanjiVG</a> by Ulrich Apel (CC BY-SA 3.0). <a href="how-it-works.html">How it all works</a></p>
     <button class="danger" data-act="reset">Reset all progress</button>
     <button class="secondary" data-act="close">Done</button>`);
+}
+
+// ----- Send feedback -----
+// There's no server, so feedback goes by email: this opens the person's own email app with a message started.
+const FEEDBACK_TO='jon@carpediemsystems.co.uk';
+
+function feedbackBody(withHints,version){
+  const mine=KANA.filter(x=>S.hints[x.k]).map(x=>`${x.k} (${x.r}): ${S.hints[x.k]}`);
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  const ua=navigator.userAgent,device=/iPhone|iPad|iPod/.test(ua)?'iPhone/iPad':/Android/.test(ua)?'Android':'Computer';
+  let body='\n\n\n';
+  if(withHints&&mine.length)body+='--- My hints ---\n'+mine.join('\n')+'\n\n';
+  return body+`--- About this phone (to help with any problems) ---\nApp version ${version}, ${device}${standalone?', home screen app':''}`;
+}
+
+export function feedbackSheet(){
+  const n=Object.keys(S.hints).filter(k=>S.hints[k]).length;
+  openSheet(`<h2>Send feedback</h2>
+    <p class="sub">Spotted a mistake, got an idea, or a better memory hint? This opens your email app with a message ready to go. Add your thoughts and press Send.</p>
+    ${n?`<label class="toggle"><input type="checkbox" id="fbhints" checked>Include my own hints (${n})</label>`:''}
+    <a class="primary" id="fbmail" href="#">Write email</a>
+    <p class="sub" style="font-size:.8rem;margin-top:10px">Or email ${FEEDBACK_TO} yourself.</p>
+    <button class="secondary" data-act="close">Close</button>`);
+  let version='unknown';
+  const update=()=>{const a=document.getElementById('fbmail'),cb=document.getElementById('fbhints');if(!a)return;
+    a.href=`mailto:${FEEDBACK_TO}?subject=${encodeURIComponent('Hiragana drill feedback')}&body=${encodeURIComponent(feedbackBody(!cb||cb.checked,version))}`;};
+  update();
+  {const cb=document.getElementById('fbhints');if(cb)cb.addEventListener('change',update);}
+  // The app version is the offline cache's name (set when sw.js is rebuilt)
+  if(window.caches)caches.keys().then(keys=>{const k=keys.find(x=>/^hiragana-\d/.test(x));if(k){version=k.replace('hiragana-','');update();}}).catch(()=>{});
 }

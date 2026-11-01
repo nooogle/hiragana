@@ -30,7 +30,7 @@ document.addEventListener('keydown',e=>{
     if(opts[+k-1]){opts[+k-1].click();done=true;}
   }
   else if(k==='0'||k==='?'||k==='d')done=press('.dk');
-  else if(k==='enter'||k===' ')done=press('[data-act="next"]')||press('[data-act="introok"]')||press('[data-act="check"]')||press('.hero .primary');
+  else if(k==='enter'||k===' ')done=press('[data-act="wnext"]')||press('[data-act="next"]')||press('[data-act="introok"]')||press('[data-act="check"]')||press('.hero .primary');
   else if(k==='y')done=press('[data-act="self"][data-ok="1"]');
   else if(k==='n')done=press('[data-act="self"][data-ok="0"]');
   else if(k==='p'||k==='r')done=press('.play')||press('.spk');

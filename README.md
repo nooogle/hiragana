@@ -19,7 +19,9 @@ hiragana/
     sound.js            voice clips and phone speech, and waiting for sounds to finish
     hints.js            the suggested hints, hint boxes and the hint editor
     keys.js             keyboard shortcuts for computers (each key presses a button on screen)
-    sheets.js           pop-up panels: row options and Settings
+    welcome.js          the welcome slides for first-time users, and the Android Install button
+    tips.js             the one-time tips during practice (which ones have been seen is kept in settings)
+    sheets.js           pop-up panels: row options, Settings, and Send feedback (by email)
     ui.js               shared bits: icons, toasts, chart colours, streak, "next cards ready" text
     drawing.js          the finger-drawing pad on writing cards
     strokes.js          the stroke order animation shown after Check on writing cards

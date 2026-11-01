@@ -9,7 +9,9 @@ import {migrate} from './scheduler.js';
 import {shuffle,buildReview,buildPractice,buildRunThrough} from './queues.js';
 import {speak} from './sound.js';
 import {toast} from './ui.js';
-import {closeSheet,rowSheet,settingsSheet} from './sheets.js';
+import {closeSheet,rowSheet,settingsSheet,feedbackSheet} from './sheets.js';
+import {closeTip,resetTips} from './tips.js';
+import {needsWelcome,renderWelcome,welcomeNext,finishWelcome,install} from './welcome.js';
 import {editHint,setHint} from './hints.js';
 import {renderHome} from './screens/home.js';
 import {renderReport,reportText,copyText} from './screens/report.js';
@@ -29,6 +31,14 @@ document.addEventListener('click',e=>{
     case 'settings':settingsSheet();break;
     case 'report':closeSheet();renderReport();break;
     case 'close':closeSheet();break;
+    // Welcome, tips and feedback
+    case 'wnext':if(welcomeNext())renderHome();break;
+    case 'wdone':finishWelcome();renderHome();break;
+    case 'install':install();break;
+    case 'welcome':closeSheet();renderWelcome();break;
+    case 'tipsreset':resetTips();toast('Tips will show again');break;
+    case 'tipok':closeTip();break;
+    case 'feedback':feedbackSheet();break;
     case 'share':{
       const text=reportText();
       if(navigator.share)navigator.share({title:'Hiragana progress',text}).catch(err=>{if(!err||err.name!=='AbortError')copyText(text);});
@@ -100,6 +110,6 @@ document.addEventListener('change',e=>{
 });
 
 migrate();   // converts progress saved by the old box scheduler (does nothing once done)
-renderHome();
+if(needsWelcome())renderWelcome();else renderHome();
 // Keeps the pages, code and voice clips on the phone so it works with no signal
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
