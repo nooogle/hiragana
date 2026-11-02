@@ -7,8 +7,8 @@ import {S,save} from './storage.js';
 // In priority order: when several could show at once, only the first unseen one does (the rest wait for next time).
 // sel finds the thing the tip points at (and need, if given, must be inside it); the bubble goes just below it.
 const TIPS=[
-  {id:'strokes',sel:'#ans',text:'<b>Watch the stroke order.</b> Tap the box to see it again.'},
-  {id:'practise',sel:'#wbtns',need:'[data-act="practise"]',text:'<b>Practise</b> wipes your drawing so you can go over the faint kana again. It won\'t change your mark.'},
+  {id:'strokes',sel:'.wsq',need:'.trace',text:'<b>Watch the stroke order</b>, drawn in red over yours. Tap the box to see it again.'},
+  {id:'practise',sel:'#wbtns',need:'[data-act="practise"]',text:'<b>Practise</b> wipes your drawing so you can go over the red strokes again. It won\'t change your mark.'},
   {id:'dk',sel:'.dk',text:'<b>Not sure? Tap Don\'t know.</b> A lucky guess hides a kana you haven\'t learnt yet.'},
   {id:'listen',sel:'#lsq',need:'.play',text:'<b>A listening card.</b> Tap the speaker to hear it again. Somewhere you can\'t play sound? There\'s a button for that below.'},
   {id:'hint',sel:'.mn',need:'.mnedit',text:'<b>Make the hints yours.</b> Tap <b>Write your own hint</b> for one that works for you. Got a good one? Send it in from Settings.'},
