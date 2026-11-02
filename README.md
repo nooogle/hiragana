@@ -2,12 +2,14 @@
 
 This is the developer side of the app. (For how to *use* it, see [How it works](how-it-works.html).)
 
+This repo is the whole app. GitHub Pages publishes it at <https://nooogle.github.io/hiragana/> (the home page listing all the apps lives in the separate `nooogle.github.io` repo).
+
 It's plain HTML, CSS and JavaScript with no build step. GitHub Pages serves these files exactly as they are, and the browser loads the JavaScript as **ES modules**: each file `export`s what it shares and `import`s what it needs from the others.
 
 ## Where things are
 
 ```
-hiragana/
+hiragana/               (this repo)
   index.html            the page skeleton: one empty <main>, then loads js/app.js
   css/style.css         all the styling (colours are variables at the top, with dark mode below)
   js/
@@ -37,6 +39,8 @@ hiragana/
   sw.js                 the offline cache (generated, see below)
   how-it-works.html     the user guide
   how-the-voice-was-made.html
+  tools/                helper scripts: make_sw.py (the offline cache list) and make_strokes.py (the stroke data)
+  preview/              temporary copies of work in progress, for trying on a phone (see preview/README.md)
 ```
 
 Screens are drawn by building HTML in JavaScript and putting it into the `<main id="app">` box. Buttons don't get their own handlers: each has a `data-act` attribute, and `app.js` has a single `switch` that decides what to do.
@@ -49,14 +53,14 @@ Modules won't load if you just double-click the HTML file (browsers block that).
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000/hiragana/>. Progress there is separate from the live site.
+Then open <http://localhost:8000/>. Progress there is separate from the live site.
 
 ## The offline cache
 
 `sw.js` keeps a copy of every file on the phone so the app works with no signal. Pages, scripts and styles are always fetched fresh when there's signal, so ordinary code changes need nothing extra. But **if you add, rename or remove a file, or change a voice clip**, rebuild the list and give it a new version name:
 
 ```bash
-python3 tools/make_sw.py hiragana hiragana/sw.js 2026-10-21c
+python3 tools/make_sw.py . sw.js 2026-11-02a
 ```
 
 ## Saved progress

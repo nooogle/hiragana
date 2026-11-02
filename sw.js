@@ -12,6 +12,7 @@ self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promis
 self.addEventListener('fetch',e=>{
   const req=e.request,url=new URL(req.url);
   if(req.method!=='GET'||url.origin!==location.origin)return;
+  if(!PREFIX.includes('preview')&&url.pathname.includes('/preview/'))return; // previews live inside the app's address: leave them to their own copy
   if(url.pathname.includes('/audio/')){ // clips: cache first
     e.respondWith(caches.match(req).then(hit=>hit||fetch(req)));
     return;
