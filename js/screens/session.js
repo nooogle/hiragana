@@ -152,13 +152,13 @@ export function replayStrokes(){
   return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0]));
 }
 
-/** The self-mark on a writing card. Either way, offer more goes at it before moving on. */
+/** The self-mark on a writing card. "Got it" moves straight on; "Not quite" shows the hint and offers more goes at it. */
 export function selfGrade(ok){
   if(sess.answered)return;sess.answered=true;
   const k=sess.queue[sess.pos].split('|')[0];
   record(sess.queue[sess.pos],ok);
-  // "Not quite" also shows the hint
-  document.getElementById('wbtns').outerHTML=`${ok?'':hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
+  if(ok){next();return;}
+  document.getElementById('wbtns').outerHTML=`${hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
   {const nx=document.querySelector('#wbtns [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
   showTips();
 }
