@@ -74,7 +74,8 @@ function renderCard(){
   }else{
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">Write this one</p><p class="romaline">${it.r}${spkBtn(k)}</p>
       <div class="wsq"><span class="model" id="model">${k}</span><canvas id="cv" aria-label="Drawing area"></canvas></div>
-      <div class="btns2" id="wbtns"><button class="secondary" data-act="clear">Clear</button><button class="primary" data-act="check">Check</button></div></div>`;
+      <div class="btns2" id="wbtns"><button class="secondary" data-act="clear">Clear</button><button class="primary" data-act="check">Check</button></div>
+      <button class="dk" data-act="wdk">Don't know</button></div>`;
     setupCanvas(document.getElementById('cv'));
     if(S.settings.sound)autoSpeak(k,stillHere());
   }
@@ -135,15 +136,23 @@ export function noSound(){sess.noSound=true;renderCard();toast('Sound off for th
 // ----- Writing cards -----
 export function clearDrawing(){const cv=document.getElementById('cv');if(cv&&cv.clear)cv.clear();}
 
-/** "Check" on a writing card: draw the right kana's strokes in red over the drawing, one at a time in order,
- *  then ask for a self-mark. Tapping the box plays the animation again. */
+/** "Check" on a writing card: show the answer, then ask for a self-mark. */
 export function checkWriting(){
-  const cv=document.getElementById('cv');cv.dataset.locked='1';
-  const k=sess.queue[sess.pos].split('|')[0];
-  cv.insertAdjacentHTML('afterend',`<button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button>`);
-  if(!replayStrokes())document.getElementById('model').classList.add('show'); // no stroke data: show the plain kana instead
+  showStrokes();
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="self" data-ok="0">Not quite</button><button class="primary" data-act="self" data-ok="1">Got it</button>`;
   showTips();
+}
+
+/** "Don't know" on a writing card: show the answer and mark it as a miss, with no self-mark to make. */
+export function dontKnowWriting(){showStrokes();selfGrade(false,true);}
+
+/** Draw the right kana's strokes in red over the drawing, one at a time in order. Tapping the box plays them again. */
+function showStrokes(){
+  const cv=document.getElementById('cv');cv.dataset.locked='1';
+  const k=sess.queue[sess.pos].split('|')[0];
+  {const d=document.querySelector('.dk');if(d)d.remove();}
+  cv.insertAdjacentHTML('afterend',`<button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button>`);
+  if(!replayStrokes())document.getElementById('model').classList.add('show'); // no stroke data: show the plain kana instead
 }
 
 /** Play the stroke order animation over the drawing. Returns false if there's no stroke data for this kana. */
@@ -152,11 +161,12 @@ export function replayStrokes(){
   return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0]));
 }
 
-/** The self-mark on a writing card. "Got it" moves straight on; "Not quite" shows the hint and offers more goes at it. */
-export function selfGrade(ok){
+/** The self-mark on a writing card. "Got it" moves straight on; "Not quite" (or "Don't know", dk) shows the hint and offers more goes at it. */
+export function selfGrade(ok,dk){
   if(sess.answered)return;sess.answered=true;
   const k=sess.queue[sess.pos].split('|')[0];
   record(sess.queue[sess.pos],ok);
+  if(dk){S.log[S.log.length-1].dk=true;save();}
   if(ok){next();return;}
   document.getElementById('wbtns').outerHTML=`${hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
   {const nx=document.querySelector('#wbtns [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
