@@ -72,8 +72,9 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .sq,.wsq{position:relative;aspect-ratio:1;background:var(--card);border:1.5px solid var(--line);border-radius:6px;display:grid;place-items:center}
 .sq{width:min(62vw,240px)}
 .wsq{width:min(84vw,320px)}
-.sq::before,.wsq::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1.5px dashed var(--guide)}
-.sq::after,.wsq::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1.5px dashed var(--guide)}
+/* The dashed centre guides. Their length is set outright: iPhone Safari doesn't stretch the vertical one between top and bottom */
+.sq::before,.wsq::before{content:"";position:absolute;left:50%;top:0;height:100%;border-left:1.5px dashed var(--guide)}
+.sq::after,.wsq::after{content:"";position:absolute;top:50%;left:0;width:100%;border-top:1.5px dashed var(--guide)}
 .sq .big{position:relative;z-index:1;font-family:var(--kana);font-size:min(38vw,150px);line-height:1;font-weight:400}
 .sq .roma{position:relative;z-index:1;font-size:min(15vw,60px);font-weight:700}
 .model{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--kana);font-size:min(60vw,230px);line-height:1;color:var(--accent);opacity:0;z-index:1;pointer-events:none}
