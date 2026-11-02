@@ -173,12 +173,17 @@ export function selfGrade(ok,dk){
   showTips();
 }
 
-/** "Practise": wipe the drawing, but leave the red strokes showing, to draw over them again. Doesn't change the mark.
- *  The strokes stop catching taps (so no replay) while drawing. */
+/** "Practise": wipe the drawing and play the strokes again, then leave them pale to draw over. Doesn't change the mark.
+ *  The button becomes "Clear", which does the same again. The strokes stop catching taps (so no replay) while drawing. */
 export function practiseWriting(){
-  const cv=document.getElementById('cv');if(!cv)return;
+  const cv=document.getElementById('cv'),tr=document.getElementById('trace');if(!cv||!tr)return;
   cv.clear();delete cv.dataset.locked;
-  const tr=document.getElementById('trace');if(tr)tr.classList.add('practising');
+  tr.classList.add('practising');tr.classList.remove('pale');
+  replayStrokes();
+  // Once they've drawn (straight away if animations are off), fade them; unless Clear has started them again since
+  const svg=tr.firstElementChild;
+  Promise.all(tr.getAnimations({subtree:true}).map(a=>a.finished)).then(()=>{if(tr.firstElementChild===svg)tr.classList.add('pale');},()=>{});
+  const b=document.querySelector('[data-act="practise"]');if(b)b.textContent='Clear';
 }
 
 function renderDone(){
