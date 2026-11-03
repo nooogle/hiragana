@@ -9,7 +9,7 @@ import {canSpeak,speak,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -43,7 +43,7 @@ function bar(){
 function renderCard(){
   if(sess.pos>=sess.queue.length)return renderDone();
   const id=sess.queue[sess.pos],[k,type]=id.split('|'),it=BY[k];
-  sess.answered=false;sess.t0=performance.now();sess.listen=false;
+  sess.answered=false;sess.t0=performance.now();sess.listen=false;sess.ws=null;
   if(type==='read'&&!S.cards[id]&&sess.mode==='review'){
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">New one to learn</p><div class="sq"><span class="big">${k}</span></div>
       <p class="reveal">${it.r}</p>${spkBtn(k)}${hintBox(k)}
@@ -134,7 +134,10 @@ export function introOk(){
 export function noSound(){sess.noSound=true;renderCard();toast('Sound off for this session');}
 
 // ----- Writing cards -----
-export function clearDrawing(){const cv=document.getElementById('cv');if(cv&&cv.clear)cv.clear();}
+export function clearDrawing(){
+  const cv=document.getElementById('cv');if(cv&&cv.clear)cv.clear();
+  if(sess&&sess.ws)drawInStep(document.getElementById('guide')); // practising: show the stroke to trace again
+}
 
 /** "Check" on a writing card: show the answer, then ask for a self-mark. */
 export function checkWriting(){
@@ -173,17 +176,63 @@ export function selfGrade(ok,dk){
   showTips();
 }
 
-/** "Practise": wipe the drawing and play the strokes again, then leave them pale to draw over. Doesn't change the mark.
- *  The button becomes "Clear", which does the same again. The strokes stop catching taps (so no replay) while drawing. */
+// ----- Practise: the worksheet row -----
+// Like the practice sheets from school: the romaji, then a box per stroke (stroke 1, then 1 and 2, and so on) to trace,
+// then an empty box to write the whole kana from memory. It only comes after the card has been marked, so nothing here
+// changes the mark or the schedule. sess.ws keeps track: k is the kana, n its number of strokes, step the box being done
+// (1 to n are tracing, n+1 is the empty box).
+
+/** "Practise" (and "Again"): turn the card into the worksheet row, starting from stroke 1. */
 export function practiseWriting(){
-  const cv=document.getElementById('cv'),tr=document.getElementById('trace');if(!cv||!tr)return;
-  cv.clear();delete cv.dataset.locked;
-  tr.classList.add('practising');tr.classList.remove('pale');
+  const k=sess.queue[sess.pos].split('|')[0],n=strokeCount(k);
+  if(!n){const cv=document.getElementById('cv');cv.clear();delete cv.dataset.locked;return;} // no stroke data: just another go
+  sess.ws={k,n,step:1};
+  const cells=Array.from({length:n+1},(_,i)=>`<span class="wcell" id="wc${i+1}">${i<n?stepSVG(k,i+1):''}</span>`).join('');
+  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>
+    <div class="wrow"><span class="wrom">${BY[k].r}</span>${cells}</div>
+    <div class="wsq"><span class="guide" id="guide"></span><canvas id="cv" aria-label="Drawing area"></canvas></div>
+    <p class="wstep" id="wstep"></p><div class="btns2" id="wbtns"></div>`;
+  setupCanvas(document.getElementById('cv'));
+  showStep();
+}
+
+// Set up the big box and buttons for the current step
+function showStep(){
+  const w=sess.ws,last=w.step>w.n,guide=document.getElementById('guide');
+  document.querySelectorAll('.wcell').forEach((c,i)=>c.classList.toggle('now',i===w.step-1));
+  guide.innerHTML=last?'':stepSVG(w.k,w.step,true);
+  drawInStep(guide);
+  document.getElementById('wstep').textContent=last?'Now write it on your own':`Stroke ${w.step} of ${w.n}: trace the orange one`;
+  document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="clear">Clear</button>`+
+    (last?`<button class="primary" data-act="wshow">Show me</button>`:`<button class="primary" data-act="wstep">Next step</button>`);
+}
+
+// Copy what's in the big box into this step's small box
+function keepDrawing(){
+  const cv=document.getElementById('cv'),c=document.getElementById('wc'+sess.ws.step);
+  c.classList.add('done');
+  c.insertAdjacentHTML('beforeend',`<img src="${cv.toDataURL()}" alt="">`);
+}
+
+/** "Next step": keep this tracing in its small box and move on to the next stroke (or the empty box). */
+export function nextStep(){
+  if(!sess||!sess.ws)return;
+  keepDrawing();
+  document.getElementById('cv').clear();
+  sess.ws.step++;
+  showStep();
+}
+
+/** "Show me" on the empty box: draw the answer in red over their writing, to compare. Tapping the box plays it again. */
+export function showPractised(){
+  if(!sess||!sess.ws)return;
+  keepDrawing();
+  const cv=document.getElementById('cv');cv.dataset.locked='1';
+  cv.insertAdjacentHTML('afterend',`<button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${sess.ws.k}. Tap to see the stroke order again"></button>`);
   replayStrokes();
-  // Once they've drawn (straight away if animations are off), fade them; unless Clear has started them again since
-  const svg=tr.firstElementChild;
-  Promise.all(tr.getAnimations({subtree:true}).map(a=>a.finished)).then(()=>{if(tr.firstElementChild===svg)tr.classList.add('pale');},()=>{});
-  const b=document.querySelector('[data-act="practise"]');if(b)b.textContent='Clear';
+  document.querySelector('.wcell.now').classList.remove('now');
+  document.getElementById('wstep').textContent='Tap the box to watch it again';
+  document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="practise">Again</button><button class="primary" data-act="next">Next</button>`;
 }
 
 function renderDone(){

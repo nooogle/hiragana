@@ -3,9 +3,9 @@
 // still applies and there's nothing to keep in step.
 //
 //   1-4          pick an answer          0, D or ?   Don't know
-//   Enter/Space  Next, Got it, Check, or the main button on the home and done screens
+//   Enter/Space  Next, Got it, Check, Next step, Show me, or the main button on the home and done screens
 //   Y / N        Got it / Not quite on writing cards
-//   P or R       play the sound again    C           clear the drawing (or Practise, after marking)
+//   P or R       play the sound again    C           clear the drawing (or Practise / Again, after marking)
 //   Esc          close a pop-up panel
 
 import {closeSheet} from './sheets.js';
@@ -30,7 +30,7 @@ document.addEventListener('keydown',e=>{
     if(opts[+k-1]){opts[+k-1].click();done=true;}
   }
   else if(k==='0'||k==='?'||k==='d')done=press('.dk');
-  else if(k==='enter'||k===' ')done=press('[data-act="wnext"]')||press('[data-act="next"]')||press('[data-act="introok"]')||press('[data-act="check"]')||press('.hero .primary');
+  else if(k==='enter'||k===' ')done=press('[data-act="wnext"]')||press('[data-act="wstep"]')||press('[data-act="wshow"]')||press('[data-act="next"]')||press('[data-act="introok"]')||press('[data-act="check"]')||press('.hero .primary');
   else if(k==='y')done=press('[data-act="self"][data-ok="1"]');
   else if(k==='n')done=press('[data-act="self"][data-ok="0"]');
   else if(k==='p'||k==='r')done=press('.play')||press('.spk');
