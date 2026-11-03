@@ -6,4 +6,6 @@ e.g. <https://nooogle.github.io/hiragana/preview/my-branch/>.
 They're not linked from anywhere, keep their own separate progress and offline cache (the real app leaves
 anything under `/preview/` alone), and get deleted once the work is merged.
 
-No previews at the moment.
+Previews at the moment:
+
+- [writing-row](https://nooogle.github.io/hiragana/preview/writing-row/): Practise on writing cards goes stroke by stroke, like a school practice sheet.

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How I made the voice clips · Hiragana drill</title>
+<meta name="description" content="How the hiragana voice clips were generated with Google Cloud Text-to-Speech (Chirp 3 HD), and the problems along the way.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EEF0EA;--card:#FAFBF7;--ink:#1C2333;--muted:#5F6674;--line:#CDD2C6;--accent:#27407A;
+  --ui:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#12161E;--card:#1B212C;--ink:#E6E9EF;--muted:#9AA1AE;--line:#2E3644;--accent:#93ABEA}}
+:root[data-theme="dark"]{--paper:#12161E;--card:#1B212C;--ink:#E6E9EF;--muted:#9AA1AE;--line:#2E3644;--accent:#93ABEA}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--ui);font-weight:500;line-height:1.65;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:calc(20px + env(safe-area-inset-top,0px)) 16px calc(48px + env(safe-area-inset-bottom,0px))}
+nav{display:flex;gap:16px;font-weight:700;margin-bottom:22px;flex-wrap:wrap}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1{font-size:1.9rem;line-height:1.25;margin:0 0 10px}
+h2{font-size:1.2rem;margin:34px 0 8px}
+p,ul,ol{margin:0 0 14px}
+ul,ol{padding-left:1.3em}
+li{margin-bottom:6px}
+.lead{font-size:1.08rem;color:var(--muted)}
+.kana{font-family:"Klee One",serif;font-size:1.15em}
+code{font-family:var(--mono);font-size:.88em;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 5px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;overflow-x:auto;margin:0 0 16px;line-height:1.5}
+pre code{background:none;border:0;padding:0;font-size:.85rem}
+</style>
+</head>
+<body>
+<main>
+<nav><a href="how-it-works.html">← How it works</a><a href="./">The app</a><a href="../">All apps</a></nav>
+
+<h1>How I made the voice clips</h1>
+<p class="lead">Every sound in the app (the 46 basic kana, the ones with dakuten like <span class="kana">が</span>, and combination sounds like <span class="kana">きゃ</span>) is its own little clip. Here's how I made them with Google Cloud's Chirp 3 HD voices and a short Python script, plus the bits that went wrong.</p>
+
+<h2>Why not just use recordings?</h2>
+<p>I wanted one clean, consistent clip per sound. I went looking for recordings someone had already shared, but couldn't find anything clearly licensed for reuse that suited this:</p>
+<ul>
+<li>A few GitHub repos have audio for each kana, but with no licence, or no idea where it came from.</li>
+<li>MIT OpenCourseWare has hiragana listening sheets, but they're non-commercial only and mostly cover words, not single kana.</li>
+<li>Big open datasets like Common Voice (CC0) and Tatoeba (mostly CC BY) are full sentences, which aren't much use for single-kana clips.</li>
+</ul>
+<p>So generating them with text-to-speech was the practical way to go.</p>
+
+<h2>Picking a service</h2>
+<p>I looked at OpenRouter's text-to-speech models (OpenAI's GPT-4o Mini TTS, Gemini TTS and Mistral's Voxtral), plus Google Cloud and Azure. I went with Google Cloud Text-to-Speech and its <b>Chirp 3 HD</b> Japanese voices. They sound natural, and the free monthly allowance covers this easily, since all of hiragana is only a few hundred characters of text.</p>
+
+<h2>Step 1: Set up Google Cloud</h2>
+<ol>
+<li>Sign up at <a href="https://console.cloud.google.com">console.cloud.google.com</a>.</li>
+<li>Make a project. I called mine <code>hiragana-tts</code>.</li>
+<li>Link a billing account to it. The API won't work without one, even though this job should cost next to nothing on the free tier.</li>
+<li>Search for <b>Cloud Text-to-Speech API</b> and click <b>Enable</b>.</li>
+</ol>
+
+<h2>Step 2: Make an API key</h2>
+<p>An API key is the simplest way to call it from a script:</p>
+<ol>
+<li>Go to <b>APIs &amp; Services → Credentials</b>.</li>
+<li>Click <b>+ Create credentials → API key</b>. Skip the "Help me choose" wizard, which only offers OAuth clients and service accounts.</li>
+<li>Click <b>Edit API key</b>, and under <b>API restrictions</b> pick <b>Cloud Text-to-Speech API</b>. That way, if the key ever leaks, it can't be used for much else.</li>
+<li>Copy the key and keep it out of anything you share or commit.</li>
+</ol>
+
+<h2>Step 3: The script</h2>
+<p>The script only uses Python's standard library. It has a table mapping romaji names to hiragana, sends each kana to Google, and saves what comes back as <code>out/&lt;romaji&gt;.mp3</code>.</p>
+<p>The request looks like this:</p>
+<pre><code>body = json.dumps({
+    "input": {"text": "あ"},
+    "voice": {"languageCode": "ja-JP", "name": "ja-JP-Chirp3-HD-Aoede"},
+    "audioConfig": {"audioEncoding": "MP3"},
+})
+# POST to https://texttospeech.googleapis.com/v1/text:synthesize?key=YOUR_KEY</code></pre>
+<p>You get JSON back with an <code>audioContent</code> field holding the audio as base64, which the script decodes and saves.</p>
+<p>The key comes from an environment variable, so it never ends up in the code:</p>
+<pre><code>export GOOGLE_API_KEY=your-key-here
+python3 generate.py a ka shi   # try a few first
+python3 generate.py            # then do the lot</code></pre>
+<p>You can also set <code>VOICE</code> to try a different Chirp 3 HD voice, and <code>OUT_DIR</code> to save somewhere else.</p>
+
+<h2>Things that went wrong</h2>
+<p><b>A silent clip.</b> My first test gave me an almost silent <code>shi.mp3</code>: 0.34 seconds and 1.3 KB, when <code>ka</code> was 0.86 seconds. Running exactly the same request again gave a good one. Chirp doesn't give the same output every time, and really short single characters with no voiced sound in them can sometimes come back nearly empty.</p>
+<p>So now the script checks each result. If a clip is under 2000 bytes, it has up to three more goes, keeps the biggest one, and warns me if it's still short. The 2000-byte cut-off is just a rule of thumb from the first few clips, so now and then it'll retry one that was actually fine.</p>
+<p><b>One that just wouldn't work: <span class="kana">え</span>.</b> On the full run, <span class="kana">い</span>, <span class="kana">き</span> and <span class="kana">え</span> all came back near-silent. <span class="kana">い</span> and <span class="kana">き</span> were fine when I re-ran them, but <span class="kana">え</span> failed even after three retries, so it wasn't just bad luck. Giving the voice a tiny bit more context sorted it. The script has a <code>TEMPLATE</code> setting that wraps the kana before sending it, and sending <code>え。</code> (with a Japanese full stop) gave a good clip:</p>
+<pre><code>OUT_DIR=fix TEMPLATE="{}。" python3 generate.py e</code></pre>
+<p>Then I copied that over <code>out/e.mp3</code>. Other things I could have tried: saying it twice (<code>{}、{}</code>, but you'd need to trim it afterwards), stretching the vowel (<code>{}ー</code>, which changes the sound), or just using a different voice for that one clip.</p>
+<p><b>Single kana are a bit risky with any text-to-speech.</b> One character on its own has no context, so the voice can read it oddly. Chirp 3 HD doesn't support SSML either, so there are fewer ways to force a pronunciation. It's worth listening to them, especially <span class="kana">は</span>, <span class="kana">を</span>, <span class="kana">ん</span>, <span class="kana">ふ</span>, <span class="kana">じ</span>, <span class="kana">ぢ</span> and <span class="kana">づ</span>. If one's wrong, you could send the kana inside a short word and trim the audio down, or switch to a Neural2 voice, which does support SSML.</p>
+
+<h2>Checking them</h2>
+<p>Once everything was generated, I sorted the files by size to spot any suspiciously small ones, then listened to a handful, especially the quiet unvoiced sounds and the awkward ones above:</p>
+<pre><code>ls -l out/ | sort -k5 -n | head
+afplay out/shi.mp3   # macOS</code></pre>
+
+<h2>Tidying them up for the app</h2>
+<p>Straight out of Google, most clips had about 0.4 seconds of silence at the start, which felt like a lag after tapping play. Before they went into the app, each one had the silence trimmed off both ends (leaving a tiny bit of breathing room), had its volume levelled so they're all equally loud, and was saved as a small mono MP3. They're about 4 KB each.</p>
+
+<h2>Cost and licensing</h2>
+<ul>
+<li>The whole set is a few hundred characters, well inside Google's monthly free allowance for Chirp 3 HD. Prices and quotas do change though, so check Google's site.</li>
+<li>If you're planning to share the clips (in an app, or as a download), have a read of Google Cloud's terms and the Text-to-Speech terms on generated audio first. I haven't been through them in detail.</li>
+</ul>
+
+<h2>Other options</h2>
+<ul>
+<li><b>Azure AI Speech</b> (for example <code>ja-JP-NanamiNeural</code>) has better SSML support, which helps if you need to pin down how a single kana is said.</li>
+<li><b>VOICEVOX</b> is free, runs on your own computer and doesn't need an account. Each of its voices has its own terms, and they usually ask for a credit.</li>
+<li><b>OpenRouter</b> has text-to-speech models through an OpenAI-style <code>/audio/speech</code> endpoint, but I haven't tried how well they cope with single Japanese kana.</li>
+</ul>
+</main>
+</body>
+</html>
