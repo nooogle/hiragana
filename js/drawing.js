@@ -1,6 +1,7 @@
 // The finger-drawing pad on writing cards.
 
-/** Turn a <canvas> into a drawing pad. Adds cv.clear() to wipe it; setting cv.dataset.locked stops drawing. */
+/** Turn a <canvas> into a drawing pad. Adds cv.clear() to wipe it; setting cv.dataset.locked stops drawing.
+ *  If set, cv.onStrokeStart and cv.onStrokeEnd are called as each stroke starts and finishes. */
 export function setupCanvas(cv){
   const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
   cv.width=r.width*dpr;cv.height=r.height*dpr;
@@ -9,9 +10,9 @@ export function setupCanvas(cv){
   ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#1C2333';
   let drawing=false;
   const pt=e=>{const b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top];};
-  cv.addEventListener('pointerdown',e=>{if(cv.dataset.locked)return;drawing=true;cv.setPointerCapture(e.pointerId);const [x,y]=pt(e);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+.01,y+.01);ctx.stroke();});
+  cv.addEventListener('pointerdown',e=>{if(cv.dataset.locked)return;drawing=true;cv.setPointerCapture(e.pointerId);if(cv.onStrokeStart)cv.onStrokeStart();const [x,y]=pt(e);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+.01,y+.01);ctx.stroke();});
   cv.addEventListener('pointermove',e=>{if(!drawing)return;const [x,y]=pt(e);ctx.lineTo(x,y);ctx.stroke();});
-  const end=()=>{drawing=false;};
+  const end=()=>{if(drawing&&cv.onStrokeEnd)cv.onStrokeEnd();drawing=false;};
   cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
   cv.clear=()=>ctx.clearRect(0,0,cv.width,cv.height);
 }
