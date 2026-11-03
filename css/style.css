@@ -1,7 +1,7 @@
 /* Hiragana drill styles. Colours are CSS variables on :root, redefined for dark mode below. */
 :root{
   --paper:#EEF0EA; --card:#FAFBF7; --ink:#1C2333; --muted:#5F6674; --line:#CDD2C6; --guide:#C3CABB;
-  --accent:#27407A; --accent-ink:#FFFFFF; --ok:#2F7D4F; --bad:#C2412D; --on-status:#FFFFFF;
+  --accent:#27407A; --accent-ink:#FFFFFF; --ok:#2F7D4F; --bad:#C2412D; --next:#D9772B; --pale:#C3CABB; --on-status:#FFFFFF;
   --l0:#E1E4DC; --l1:#F2C7BC; --l2:#F3DDA6; --l3:#C9E0B1; --l4:#8CC49C;
   --kana:"Klee One","Hiragino Mincho ProN","Yu Mincho",serif;
   --ui:"Zen Maru Gothic","Hiragino Maru Gothic ProN",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -12,13 +12,13 @@
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --paper:#12161E; --card:#1B212C; --ink:#E6E9EF; --muted:#9AA1AE; --line:#2E3644; --guide:#3A4354;
-    --accent:#93ABEA; --accent-ink:#0F1420; --ok:#6CC08A; --bad:#EE7A64; --on-status:#0F1420;
+    --accent:#93ABEA; --accent-ink:#0F1420; --ok:#6CC08A; --bad:#EE7A64; --next:#F0A35E; --pale:#525D72; --on-status:#0F1420;
     --l0:#232A36; --l1:#6A3328; --l2:#665324; --l3:#3D5A30; --l4:#2F6E48;
   }
 }
 :root[data-theme="dark"]{
   --paper:#12161E; --card:#1B212C; --ink:#E6E9EF; --muted:#9AA1AE; --line:#2E3644; --guide:#3A4354;
-  --accent:#93ABEA; --accent-ink:#0F1420; --ok:#6CC08A; --bad:#EE7A64; --on-status:#0F1420;
+  --accent:#93ABEA; --accent-ink:#0F1420; --ok:#6CC08A; --bad:#EE7A64; --next:#F0A35E; --pale:#525D72; --on-status:#0F1420;
   --l0:#232A36; --l1:#6A3328; --l2:#665324; --l3:#3D5A30; --l4:#2F6E48;
 }
 *,*::before,*::after{box-sizing:inherit}
@@ -73,19 +73,29 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .sq{width:min(62vw,240px)}
 .wsq{width:min(84vw,320px)}
 /* The dashed centre guides. Keep them a whole number of pixels wide: iPhone Safari doesn't draw a 1.5px dashed vertical line */
-.sq::before,.wsq::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--guide)}
-.sq::after,.wsq::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--guide)}
+.sq::before,.wsq::before,.wcell::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--guide)}
+.sq::after,.wsq::after,.wcell::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--guide)}
 .sq .big{position:relative;z-index:1;font-family:var(--kana);font-size:min(38vw,150px);line-height:1;font-weight:400}
 .sq .roma{position:relative;z-index:1;font-size:min(15vw,60px);font-weight:700}
 .model{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--kana);font-size:min(60vw,230px);line-height:1;color:var(--accent);opacity:0;z-index:1;pointer-events:none}
 .model.show{opacity:.3}
 .trace{position:absolute;inset:0;z-index:3;padding:0;border:0;background:none}
 .trace:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.trace.practising{pointer-events:none}
-.trace.pale .strokes{opacity:.4;transition:opacity .6s}
 .trace .strokes{display:block;width:100%;height:100%;fill:none;stroke:var(--bad);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .trace .strokes text{fill:var(--bad);stroke:var(--card);stroke-width:1.5;paint-order:stroke;font:700 6px var(--ui)}
 canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none}
+/* Practise: the worksheet row (a small box per stroke, then an empty one) above the big box to trace in */
+.wrow{display:flex;align-items:center;gap:4px;width:min(84vw,320px);margin:0 0 12px}
+.wrom{flex:none;min-width:2.4em;font-weight:700;font-size:.95rem;line-height:1.1;text-align:center}
+.wcell{position:relative;flex:1 1 0;max-width:52px;aspect-ratio:1;background:var(--card);border:1.5px solid var(--line);border-radius:5px}
+.wcell.now{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.wcell img{position:absolute;inset:0;width:100%;height:100%;z-index:1}
+.guide{position:absolute;inset:0;z-index:1;pointer-events:none}
+.steps{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:var(--pale);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.steps .now{stroke:var(--next)}
+.wcell.done .steps .now{stroke:var(--pale)}
+.steps text{fill:var(--next);stroke:var(--card);stroke-width:1.5;paint-order:stroke;font:700 7px var(--ui)}
+.wstep{color:var(--muted);font-weight:700;margin:12px 0 0;text-align:center}
 .romaline{font-size:2rem;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:12px}
 .romaline .spk{margin:0}
 
