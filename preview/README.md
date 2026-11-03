@@ -6,4 +6,6 @@ e.g. <https://nooogle.github.io/hiragana/preview/my-branch/>.
 They're not linked from anywhere, keep their own separate progress and offline cache (the real app leaves
 anything under `/preview/` alone), and get deleted once the work is merged.
 
-No previews at the moment.
+Previews at the moment:
+
+- [auto-step](https://nooogle.github.io/hiragana/preview/auto-step/): Practise moves to the next box by itself once all the strokes are drawn.
