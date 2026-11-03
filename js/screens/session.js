@@ -202,7 +202,7 @@ function showStep(){
   document.querySelectorAll('.wcell').forEach((c,i)=>c.classList.toggle('now',i===w.step-1));
   guide.innerHTML=last?'':stepSVG(w.k,w.step,true);
   drawInStep(guide);
-  document.getElementById('wstep').textContent=last?'Now write it on your own':`Stroke ${w.step} of ${w.n}: trace the orange one`;
+  document.getElementById('wstep').textContent=last?'Now write it on your own':w.step===1?`Stroke 1 of ${w.n}: trace it`:`Strokes 1 to ${w.step} of ${w.n}: trace them in order`;
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="clear">Clear</button>`+
     (last?`<button class="primary" data-act="wshow">Show me</button>`:`<button class="primary" data-act="wstep">Next step</button>`);
 }

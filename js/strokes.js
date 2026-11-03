@@ -39,12 +39,12 @@ export function playStrokes(box,k){
 /** How many strokes kana k has (0 if there's no stroke data). */
 export const strokeCount=k=>STROKES[k]?STROKES[k].s.length:0;
 
-/** A Practise picture: kana k's first n strokes, the earlier ones pale and stroke n highlighted (with its number if num). */
+/** A Practise picture: kana k's first n strokes, the earlier ones grey and stroke n highlighted (with all their numbers if num). */
 export function stepSVG(k,n,num){
-  const d=STROKES[k];
+  const d=STROKES[k],now=i=>i===n-1?' class="now"':'';
   return `<svg class="steps" viewBox="0 0 109 109" aria-hidden="true">
-    ${d.s.slice(0,n).map((p,i)=>`<path d="${p}"${i===n-1?' class="now"':''}/>`).join('')}
-    ${num?`<text x="${d.n[n-1][0]}" y="${d.n[n-1][1]}">${n}</text>`:''}</svg>`;
+    ${d.s.slice(0,n).map((p,i)=>`<path d="${p}"${now(i)}/>`).join('')}
+    ${num?d.n.slice(0,n).map(([x,y],i)=>`<text x="${x}" y="${y}"${now(i)}>${i+1}</text>`).join(''):''}</svg>`;
 }
 
 /** Animate the highlighted stroke in a Practise picture drawing itself. */
