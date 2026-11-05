@@ -73,8 +73,8 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .sq{width:min(62vw,240px)}
 .wsq{width:min(84vw,320px)}
 /* The dashed centre guides. Keep them a whole number of pixels wide: iPhone Safari doesn't draw a 1.5px dashed vertical line */
-.sq::before,.wsq::before,.wcell::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--guide)}
-.sq::after,.wsq::after,.wcell::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--guide)}
+.sq::before,.wsq::before,.wcell::before,.pmodel::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--guide)}
+.sq::after,.wsq::after,.wcell::after,.pmodel::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--guide)}
 .sq .big{position:relative;z-index:1;font-family:var(--kana);font-size:min(38vw,150px);line-height:1;font-weight:400}
 .sq .roma{position:relative;z-index:1;font-size:min(15vw,60px);font-weight:700}
 .model{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--kana);font-size:min(60vw,230px);line-height:1;color:var(--accent);opacity:0;z-index:1;pointer-events:none}
@@ -97,6 +97,23 @@ canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:n
 .wcell.done .steps path.now{stroke:var(--pale)}
 .steps text{fill:var(--muted);stroke:var(--card);stroke-width:1.5;paint-order:stroke;font:700 7px var(--ui)}
 .steps text.now{fill:var(--next)}
+/* Practise in 4 steps: the step list, the faint red guide to trace, and the small model box beside the drawing box */
+.psteps{display:flex;gap:6px;list-style:none;padding:0;margin:0 0 12px;width:min(92vw,420px)}
+.psteps li{flex:1;text-align:center;font-size:.78rem;font-weight:700;color:var(--muted);padding:5px 0;border:1.5px solid var(--line);border-radius:999px}
+.psteps li.now{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.psteps li.done{color:var(--ok)}
+.ghost .strokes,.pmodel>.strokes{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ghost .strokes{stroke:var(--bad);stroke-width:4;opacity:.3}
+.pmodel>.strokes{stroke:var(--ink);stroke-width:4}
+.pmodel>.strokes text{fill:var(--accent);stroke:var(--card);stroke-width:2;paint-order:stroke;font:700 12px var(--ui)}
+.pmodel .trace .strokes text{font-size:12px;stroke-width:2} /* the small box needs bigger numbers */
+.pside{display:flex;gap:10px;align-items:flex-start;justify-content:center;width:min(92vw,420px)}
+.pside .wsq{flex:none;width:min(60vw,260px)}
+.pmodel{position:relative;flex:none;width:min(28vw,130px);aspect-ratio:1;background:var(--card);border:1.5px solid var(--line);border-radius:6px}
+.pfb{width:min(92vw,420px);text-align:center;font-weight:700}
+.pfb p{margin:8px 0 0}
+.pfb.good{color:var(--ok)}
+.pfb.bad{color:var(--bad)}
 .wstep{color:var(--muted);font-weight:700;margin:12px 0 0;text-align:center}
 .romaline{font-size:2rem;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:12px}
 .romaline .spk{margin:0}

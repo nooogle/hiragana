@@ -15,7 +15,7 @@ import {needsWelcome,renderWelcome,welcomeNext,finishWelcome,install} from './we
 import {editHint,setHint} from './hints.js';
 import {renderHome} from './screens/home.js';
 import {renderReport,reportText,copyText} from './screens/report.js';
-import {startSession,answer,next,introOk,noSound,clearDrawing,checkWriting,dontKnowWriting,selfGrade,replayStrokes,practiseWriting,nextStep,showPractised} from './screens/session.js';
+import {startSession,answer,next,introOk,noSound,clearDrawing,checkWriting,dontKnowWriting,selfGrade,replayStrokes,practiseWriting,nextStep,showPractised,pWatch,pNext,pDone} from './screens/session.js';
 import './keys.js'; // keyboard shortcuts for computers (sets itself up when loaded)
 
 document.addEventListener('click',e=>{
@@ -70,6 +70,10 @@ document.addEventListener('click',e=>{
     case 'practise':practiseWriting();break;
     case 'wstep':nextStep();break;
     case 'wshow':showPractised();break;
+    case 'pwatch':pWatch();break;
+    case 'pnext':pNext();break;
+    case 'pretry':pNext(true);break;
+    case 'pdone':pDone();break;
     // Hints
     case 'edithint':editHint(b.dataset.k,b.closest('.hintkeys')?BY[b.dataset.k].row:null);break; // from the chart? go back there after
     case 'savehint':setHint(b.dataset.k,document.getElementById('hinttext').value.trim());break;
@@ -109,6 +113,7 @@ document.addEventListener('change',e=>{
     if(!ticked.length){e.target.checked=true;toast('Tick at least one');return;}
     S.settings.types=ticked;save();renderHome();
   }
+  if(e.target.name==='wpmode'){S.settings.practise=e.target.value;save();}
   if(e.target.id==='voice'){S.settings.voice=e.target.value;save();speak('あ');}
 });
 
