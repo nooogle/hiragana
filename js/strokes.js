@@ -1,5 +1,6 @@
 // The stroke order animation shown after "Check" on writing cards: each stroke draws itself in turn,
-// with its number appearing where it starts. Also the pictures for Practise, which add one stroke at each step.
+// with its number appearing where it starts. Also the pictures for Practise (including the classic worksheet,
+// which adds one stroke at each step).
 // Stroke data comes from KanjiVG (see vendor/kanjivg-LICENSE.txt).
 
 import {STROKES} from '../vendor/kanjivg-hiragana.js';
@@ -18,13 +19,19 @@ function drawIn(p,delay){
   return duration;
 }
 
-/** Draw kana k's strokes into box (replacing what's there) and animate them in order.
- *  Returns false if there's no stroke data for k, so the caller can show the plain kana instead. */
-export function playStrokes(box,k){
-  const d=STROKES[k];if(!d)return false;
-  box.innerHTML=`<svg class="strokes" viewBox="0 0 109 109" aria-hidden="true">
+/** Kana k's whole strokes as a picture, with their numbers unless nums is false. */
+export function strokesSVG(k,nums=true){
+  const d=STROKES[k];
+  return `<svg class="strokes" viewBox="0 0 109 109" aria-hidden="true">
     ${d.s.map(p=>`<path d="${p}"/>`).join('')}
-    ${d.n.map(([x,y],i)=>`<text x="${x}" y="${y}">${i+1}</text>`).join('')}</svg>`;
+    ${nums?d.n.map(([x,y],i)=>`<text x="${x}" y="${y}">${i+1}</text>`).join(''):''}</svg>`;
+}
+
+/** Draw kana k's strokes into box (replacing what's there) and animate them in order (with numbers unless nums is false).
+ *  Returns false if there's no stroke data for k, so the caller can show the plain kana instead. */
+export function playStrokes(box,k,nums=true){
+  if(!STROKES[k])return false;
+  box.innerHTML=strokesSVG(k,nums);
   drawAll(box);
   return true;
 }
@@ -55,3 +62,4 @@ export function stepSVG(k,n,num){
 
 /** Animate a Practise picture: all its strokes draw themselves in order, so it's clear they're all to be traced. */
 export const drawInStep=drawAll;
+

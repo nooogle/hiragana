@@ -9,7 +9,7 @@ import {canSpeak,speak,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes,strokeCount,stepSVG,drawInStep} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -43,7 +43,7 @@ function bar(){
 function renderCard(){
   if(sess.pos>=sess.queue.length)return renderDone();
   const id=sess.queue[sess.pos],[k,type]=id.split('|'),it=BY[k];
-  sess.answered=false;sess.t0=performance.now();sess.listen=false;sess.ws=null;
+  sess.answered=false;sess.t0=performance.now();sess.listen=false;sess.ws=null;sess.ps=null;
   if(type==='read'&&!S.cards[id]&&sess.mode==='review'){
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">New one to learn</p><div class="sq"><span class="big">${k}</span></div>
       <p class="reveal">${it.r}</p>${spkBtn(k)}${hintBox(k)}
@@ -137,6 +137,7 @@ export function noSound(){sess.noSound=true;renderCard();toast('Sound off for th
 export function clearDrawing(){
   const cv=document.getElementById('cv');if(cv&&cv.clear)cv.clear();
   if(sess&&sess.ws){clearTimeout(sess.ws.timer);sess.ws.drawn=0;drawInStep(document.getElementById('guide'));} // practising: start this box again
+  if(sess&&sess.ps&&sess.ps.step===2)drawInStep(document.getElementById('guide')); // tracing: draw the guide in again
 }
 
 /** "Check" on a writing card: show the answer, then ask for a self-mark. */
@@ -161,7 +162,7 @@ function showStrokes(){
 /** Play the stroke order animation over the drawing. Returns false if there's no stroke data for this kana. */
 export function replayStrokes(){
   const box=document.getElementById('trace');
-  return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0]));
+  return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0],!box.dataset.plain)); // data-plain: no numbers
 }
 
 /** The self-mark on a writing card. "Got it" moves straight on; "Not quite" (or "Don't know", dk) shows the hint and offers more goes at it. */
@@ -176,7 +177,82 @@ export function selfGrade(ok,dk){
   showTips();
 }
 
-// ----- Practise: the worksheet row -----
+// ----- Practise -----
+// "Practise" (and "Again") on a writing card, once it's been marked. There are two ways to do it, chosen in
+// Settings → Practising writing: 4 steps (the default) or the classic worksheet row. Neither changes the mark or the schedule.
+
+/** "Practise" (and "Again"): start practising the kana on this card, from the beginning. */
+export function practiseWriting(){
+  const k=sess.queue[sess.pos].split('|')[0],n=strokeCount(k);
+  if(!n){const cv=document.getElementById('cv');cv.clear();delete cv.dataset.locked;return;} // no stroke data: just another go
+  sess.ws=sess.ps=null;
+  if(S.settings.practise==='classic')practiseClassic(k,n);
+  else{sess.ps={k,step:1};showPStep();}
+}
+
+// ----- Practise in 4 steps -----
+// The same four steps for every kana, however many strokes it has:
+//   1 Watch: the strokes draw themselves (no numbers), with the sound. Replay plays both again.
+//   2 Trace: one box, with the whole kana in faint red underneath to draw over.
+//   3 Copy: an empty box, with the kana and its numbered strokes in a small box beside it.
+//   4 Recall: an empty box, with only the romaji and the sound. Done shows the answer beside their writing.
+// sess.ps keeps track: k is the kana, step the step they're on.
+const PSTEPS=['Watch','Trace','Copy','Recall'];
+
+// Set up the screen for the current step
+function showPStep(){
+  const {k,step}=sess.ps,it=BY[k];
+  const steps=PSTEPS.map((t,i)=>`<li class="${i+1===step?'now':i+1<step?'done':''}">${i+1} ${t}</li>`).join('');
+  const clear=`<button class="secondary" data-act="clear">Clear</button>`;
+  let box,say,btns;
+  if(step===1){
+    box=`<div class="wsq"><button class="trace" id="trace" data-act="strokes" data-plain="1" aria-label="${k}: tap to watch the strokes again"></button></div>`;
+    say='Watch the strokes go in';
+    btns=`<button class="secondary" data-act="pwatch">Replay</button><button class="primary" data-act="pnext">Next</button>`;
+  }else if(step===2){
+    box=`<div class="wsq"><span class="guide ghost" id="guide">${strokesSVG(k,false)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div>`;
+    say='Trace over it, in order';
+    btns=`${clear}<button class="primary" data-act="pnext">Next</button>`;
+  }else{
+    const model=step===3?`<span class="pmodel">${strokesSVG(k)}</span>`:'';
+    box=`<div class="pside" id="pside">${model}<div class="wsq"><canvas id="cv" aria-label="Drawing area"></canvas></div></div>`;
+    say=step===3?'Copy it, in order':'Now write it from memory';
+    btns=`${clear}<button class="primary" data-act="${step===3?'pnext':'pdone'}">${step===3?'Next':'Done'}</button>`;
+  }
+  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
+    <p class="romaline">${it.r}${spkBtn(k)}</p>${box}<p class="wstep" id="wstep">${say}</p>
+    <div class="btns2" id="wbtns">${btns}</div>`;
+  if(step===1){pWatch();return;}
+  setupCanvas(document.getElementById('cv'));
+  if(step===2)drawInStep(document.getElementById('guide'));
+  if(step===4)speak(k);
+}
+
+/** "Replay" on the Watch step: the strokes and the sound again. */
+export function pWatch(){
+  if(!sess||!sess.ps)return;
+  replayStrokes();speak(sess.ps.k);
+}
+
+/** "Next": on to the next step. */
+export function pNext(){
+  if(!sess||!sess.ps)return;
+  sess.ps.step++;
+  showPStep();
+}
+
+/** "Done" on Recall: show the answer beside their writing. */
+export function pDone(){
+  if(!sess||!sess.ps)return;
+  const w=sess.ps;
+  document.getElementById('cv').dataset.locked='1';
+  document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`);
+  replayStrokes();
+  document.getElementById('wstep').textContent='Tap the answer to watch it again';
+  document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="practise">Again</button><button class="primary" data-act="next">Next</button>`;
+}
+
+// ----- Practise, classic: the worksheet row -----
 // Like the practice sheets from school: the romaji, then a box per stroke (stroke 1, then 1 and 2, and so on) to trace,
 // then an empty box to write the whole kana from memory. It only comes after the card has been marked, so nothing here
 // changes the mark or the schedule. sess.ws keeps track: k is the kana, n its number of strokes, step the box being done
@@ -186,10 +262,8 @@ export function selfGrade(ok,dk){
 // never gets there, such as when two strokes are joined into one.
 const STEP_PAUSE_MS=700;
 
-/** "Practise" (and "Again"): turn the card into the worksheet row, starting from stroke 1. */
-export function practiseWriting(){
-  const k=sess.queue[sess.pos].split('|')[0],n=strokeCount(k);
-  if(!n){const cv=document.getElementById('cv');cv.clear();delete cv.dataset.locked;return;} // no stroke data: just another go
+// Turn the card into the worksheet row for kana k (which has n strokes), starting from stroke 1
+function practiseClassic(k,n){
   sess.ws={k,n,step:1};
   const cells=Array.from({length:n+1},(_,i)=>`<span class="wcell" id="wc${i+1}">${i<n?stepSVG(k,i+1):''}</span>`).join('');
   document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>

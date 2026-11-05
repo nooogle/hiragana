@@ -55,6 +55,10 @@ export function settingsSheet(){
       <p class="sub">Only the ones you tick, for every kana in your chosen rows.</p>
       ${MANUAL_TYPES.map(([t,name])=>`<label class="toggle"><input type="checkbox" name="ptype" value="${t}" ${types.includes(t)?'checked':''}>${name}</label>`).join('')}
     </div>
+    <h3>Practising writing</h3>
+    <p class="sub">What <b>Practise</b> does after you miss a writing card.</p>
+    <label class="toggle"><input type="radio" name="wpmode" value="steps" ${S.settings.practise!=='classic'?'checked':''}>4 steps: watch, trace, copy, then from memory</label>
+    <label class="toggle"><input type="radio" name="wpmode" value="classic" ${S.settings.practise==='classic'?'checked':''}>Classic: one more stroke in each box</label>
     <h3>Sound</h3>
     <label class="toggle"><input type="checkbox" id="snd" ${S.settings.sound?'checked':''}>Play sounds automatically</label>
     <label class="field">Voice<select id="voice">
