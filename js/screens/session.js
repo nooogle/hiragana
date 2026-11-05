@@ -9,7 +9,7 @@ import {canSpeak,speak,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG,checkStrokes} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -196,7 +196,6 @@ export function practiseWriting(){
 //   2 Trace: one box, with the whole kana in faint red underneath to draw over.
 //   3 Copy: an empty box, with the kana and its numbered strokes in a small box beside it.
 //   4 Recall: an empty box, with only the romaji and the sound. Done shows the answer beside their writing.
-// In 3 and 4, Done checks the order and direction of the strokes they drew. It never interrupts while they're drawing.
 // sess.ps keeps track: k is the kana, step the step they're on.
 const PSTEPS=['Watch','Trace','Copy','Recall'];
 
@@ -218,11 +217,11 @@ function showPStep(){
     const model=step===3?`<span class="pmodel">${strokesSVG(k)}</span>`:'';
     box=`<div class="pside" id="pside">${model}<div class="wsq"><canvas id="cv" aria-label="Drawing area"></canvas></div></div>`;
     say=step===3?'Copy it, in order':'Now write it from memory';
-    btns=`${clear}<button class="primary" data-act="pdone">Done</button>`;
+    btns=`${clear}<button class="primary" data-act="${step===3?'pnext':'pdone'}">${step===3?'Next':'Done'}</button>`;
   }
   document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
     <p class="romaline">${it.r}${spkBtn(k)}</p>${box}<p class="wstep" id="wstep">${say}</p>
-    <div class="pfb" id="pfb"></div><div class="btns2" id="wbtns">${btns}</div>`;
+    <div class="btns2" id="wbtns">${btns}</div>`;
   if(step===1){pWatch();return;}
   setupCanvas(document.getElementById('cv'));
   if(step===2)drawInStep(document.getElementById('guide'));
@@ -235,27 +234,18 @@ export function pWatch(){
   replayStrokes();speak(sess.ps.k);
 }
 
-/** "Next": on to the next step. "Try again" (again set): the same step from the start. */
-export function pNext(again){
+/** "Next": on to the next step. */
+export function pNext(){
   if(!sess||!sess.ps)return;
-  if(!again)sess.ps.step++;
+  sess.ps.step++;
   showPStep();
 }
 
-/** "Done" on Copy or Recall: check the stroke order, and on Recall show the answer beside their writing. */
+/** "Done" on Recall: show the answer beside their writing. */
 export function pDone(){
   if(!sess||!sess.ps)return;
-  const w=sess.ps,cv=document.getElementById('cv');
-  if(!cv.strokes.length){toast('Write it in the box first');return;}
-  cv.dataset.locked='1';
-  const r=checkStrokes(w.k,cv.strokes),fb=document.getElementById('pfb');
-  fb.className='pfb '+(r.ok?'good':'bad');
-  fb.innerHTML=r.notes.map(t=>`<p>${t}</p>`).join('');
-  if(w.step===3){
-    document.getElementById('wstep').textContent='';
-    document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="pretry">Try again</button><button class="primary" data-act="pnext">Next</button>`;
-    return;
-  }
+  const w=sess.ps;
+  document.getElementById('cv').dataset.locked='1';
   document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`);
   replayStrokes();
   document.getElementById('wstep').textContent='Tap the answer to watch it again';

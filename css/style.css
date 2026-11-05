@@ -110,10 +110,6 @@ canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:n
 .pside{display:flex;gap:10px;align-items:flex-start;justify-content:center;width:min(92vw,420px)}
 .pside .wsq{flex:none;width:min(60vw,260px)}
 .pmodel{position:relative;flex:none;width:min(28vw,130px);aspect-ratio:1;background:var(--card);border:1.5px solid var(--line);border-radius:6px}
-.pfb{width:min(92vw,420px);text-align:center;font-weight:700}
-.pfb p{margin:8px 0 0}
-.pfb.good{color:var(--ok)}
-.pfb.bad{color:var(--bad)}
 .wstep{color:var(--muted);font-weight:700;margin:12px 0 0;text-align:center}
 .romaline{font-size:2rem;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:12px}
 .romaline .spk{margin:0}
