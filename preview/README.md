@@ -8,4 +8,4 @@ anything under `/preview/` alone), and get deleted once the work is merged.
 
 Previews at the moment:
 
-- [practise-4-step](https://nooogle.github.io/hiragana/preview/practise-4-step/): Practise in 4 steps (watch, trace, copy, recall), with a rough stroke-order check. The old way is under Settings → Practising writing → Classic.
+- [practise-4-step](https://nooogle.github.io/hiragana/preview/practise-4-step/): Practise in 4 steps (watch, trace, copy, recall). The old way is under Settings → Practising writing → Classic.

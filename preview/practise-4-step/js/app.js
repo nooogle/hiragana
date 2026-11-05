@@ -72,7 +72,6 @@ document.addEventListener('click',e=>{
     case 'wshow':showPractised();break;
     case 'pwatch':pWatch();break;
     case 'pnext':pNext();break;
-    case 'pretry':pNext(true);break;
     case 'pdone':pDone();break;
     // Hints
     case 'edithint':editHint(b.dataset.k,b.closest('.hintkeys')?BY[b.dataset.k].row:null);break; // from the chart? go back there after
