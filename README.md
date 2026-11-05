@@ -33,13 +33,16 @@ hiragana/               (this repo)
       report.js         the Progress screen and its share text
   vendor/               the ts-fsrs library, untouched (MIT licence), and the stroke order data
                         from KanjiVG (CC BY-SA 3.0, built by tools/make_strokes.py)
+    fonts/              the Klee One and Zen Maru Gothic fonts (SIL Open Font License), kept here so they
+                        work offline (built by tools/make_fonts.py)
   icons/                app icons for iPhone, Android and desktop, and the favicons
   manifest.webmanifest  the app's name, icons and colours, used when it's installed
   audio/                one MP3 per sound, named by romaji
   sw.js                 the offline cache (generated, see below)
   how-it-works.html     the user guide
   how-the-voice-was-made.html
-  tools/                helper scripts: make_sw.py (the offline cache list) and make_strokes.py (the stroke data)
+  tools/                helper scripts: make_sw.py (the offline cache list), make_strokes.py (the stroke data)
+                        and make_fonts.py (the fonts)
   preview/              temporary copies of work in progress, for trying on a phone (see preview/README.md)
 ```
 
@@ -57,11 +60,13 @@ Then open <http://localhost:8000/>. Progress there is separate from the live sit
 
 ## The offline cache
 
-`sw.js` keeps a copy of every file on the phone so the app works with no signal. Pages, scripts and styles are always fetched fresh when there's signal, so ordinary code changes need nothing extra. But **if you add, rename or remove a file, or change a voice clip**, rebuild the list and give it a new version name:
+`sw.js` keeps a copy of every file on the phone so the app works with no signal. Pages, scripts and styles are always fetched fresh when there's signal, so ordinary code changes need nothing extra. If the server takes more than 3 seconds to answer (a weak signal), the saved copy is used instead, so the app still opens quickly. But **if you add, rename or remove a file, or change a voice clip**, rebuild the list and give it a new version name:
 
 ```bash
 python3 tools/make_sw.py . sw.js 2026-11-02a
 ```
+
+The fonts are kept in the app, not loaded from Google, so they work offline. To save space, only the parts of each font covering characters the app uses are kept. If you add text with new characters (katakana or kanji, say), run `python3 tools/make_fonts.py`, then rebuild the cache list as above. Until then, those characters just show in the phone's own font.
 
 ## Saved progress
 
