@@ -17,7 +17,7 @@ function rowHTML(row){
 export function renderHome(){
   endSession();
   const n=buildReview().length;
-  const seen=Object.keys(S.cards).some(id=>S.rows.includes(BY[id.split('|')[0]].row));
+  const seen=Object.keys(S.cards).some(id=>BY[id.split('|')[0]]&&S.rows.includes(BY[id.split('|')[0]].row));
   const run=seen||isManual()?'<button class="secondary" data-act="runall">Run through everything</button>':''; // manual mode can run through cards not started yet
   const writing=isManual()?manualTypes().includes('write'):S.settings.write!==false;
   let hero;
