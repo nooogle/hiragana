@@ -1,1 +1,3 @@
 .superpowers/
+out/
+__pycache__/

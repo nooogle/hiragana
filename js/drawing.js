@@ -6,7 +6,7 @@ export function setupCanvas(cv){
   const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
   cv.width=r.width*dpr;cv.height=r.height*dpr;
   const ctx=cv.getContext('2d');ctx.scale(dpr,dpr);
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(6,r.width*0.04);
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=Math.max(6,Math.min(r.width,r.height)*0.04); // the shorter side, so a double-width box draws the same pen
   ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--ink').trim()||'#1C2333';
   let drawing=false;
   const pt=e=>{const b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top];};

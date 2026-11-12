@@ -7,10 +7,13 @@ import {isManual,manualTypes} from '../scheduler.js';
 import {app,level,nextDueText,paceText} from '../ui.js';
 import {endSession} from './session.js';
 
+// The chart's sections, in order
+const SECTIONS=[['basic','Basic hiragana'],['dakuten','With dakuten'],['combo','Combinations'],['marks','Small っ']];
+
 function rowHTML(row){
   const on=S.rows.includes(row.id);
   const lvlVar=['--l0','--l1','--l2','--l3','--l4'];
-  const cells=[...row.k].map(k=>{const l=level(BY[k]);return `<span class="cell" ${l>=0?`style="background:var(${lvlVar[l]})"`:''}>${k}</span>`;}).join('');
+  const cells=row.k.map(k=>{const l=level(BY[k]);return `<span class="cell${k.length>1?" two":""}" ${l>=0?`style="background:var(${lvlVar[l]})"`:''}>${k}</span>`;}).join('');
   return `<button class="row ${on?'on':'off'}" data-act="row" data-row="${row.id}" aria-label="${on?'Options for':'Add'} the ${row.k[0]} row"><span class="cells">${cells}</span><span class="tag">${on?'':'Add'}</span></button>`;
 }
 
@@ -33,8 +36,7 @@ export function renderHome(){
     <section class="hero">${hero}</section>
     <p class="pace">${paceText()}</p>
     <section class="chart">
-      <h2>Basic hiragana</h2>${ROWS.filter(r=>!r.base).map(rowHTML).join('')}
-      <h2>With dakuten</h2>${ROWS.filter(r=>r.base).map(rowHTML).join('')}
+      ${SECTIONS.map(([sec,title])=>`<h2>${title}</h2>${ROWS.filter(r=>r.sec===sec).map(rowHTML).join('')}`).join('')}
     </section>
     <div class="legend"><span><i style="background:var(--l1)"></i>Learning</span><span><i style="background:var(--l2)"></i>Shaky</span><span><i style="background:var(--l3)"></i>Good</span><span><i style="background:var(--l4)"></i>${writing?'Solid, can write it':'Solid'}</span></div>
     <p class="howlink"><a href="how-it-works.html">How this works</a></p>`;

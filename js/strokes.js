@@ -19,18 +19,24 @@ function drawIn(p,delay){
   return duration;
 }
 
+export {STROKES};
+
+// An entry can be two characters (きゃ): each gets its own picture, side by side in a .multi wrapper,
+// with the strokes numbered straight through (き is 1-3, ゃ is 4-6).
+const parts=k=>{let o=0;return [...k].map(ch=>{const p={ch,d:STROKES[ch],o};o+=p.d?p.d.s.length:0;return p;});};
+const wrap=(k,svgs)=>[...k].length>1?`<span class="multi">${svgs.join('')}</span>`:svgs[0];
+
 /** Kana k's whole strokes as a picture, with their numbers unless nums is false. */
 export function strokesSVG(k,nums=true){
-  const d=STROKES[k];
-  return `<svg class="strokes" viewBox="0 0 109 109" aria-hidden="true">
+  return wrap(k,parts(k).map(({d,o})=>`<svg class="strokes" viewBox="0 0 109 109" aria-hidden="true">
     ${d.s.map(p=>`<path d="${p}"/>`).join('')}
-    ${nums?d.n.map(([x,y],i)=>`<text x="${x}" y="${y}">${i+1}</text>`).join(''):''}</svg>`;
+    ${nums?d.n.map(([x,y],i)=>`<text x="${x}" y="${y}">${o+i+1}</text>`).join(''):''}</svg>`));
 }
 
 /** Draw kana k's strokes into box (replacing what's there) and animate them in order (with numbers unless nums is false).
  *  Returns false if there's no stroke data for k, so the caller can show the plain kana instead. */
 export function playStrokes(box,k,nums=true){
-  if(!STROKES[k])return false;
+  if(!strokeCount(k))return false;
   box.innerHTML=strokesSVG(k,nums);
   drawAll(box);
   return true;
@@ -49,15 +55,15 @@ function drawAll(box){
   });
 }
 
-/** How many strokes kana k has (0 if there's no stroke data). */
-export const strokeCount=k=>STROKES[k]?STROKES[k].s.length:0;
+/** How many strokes kana k has, across both characters (0 if any character has no stroke data). */
+export const strokeCount=k=>{const p=parts(k);return p.every(x=>x.d)?p.reduce((n,x)=>n+x.d.s.length,0):0;};
 
 /** A Practise picture: kana k's first n strokes, the earlier ones grey and stroke n highlighted (with all their numbers if num). */
 export function stepSVG(k,n,num){
-  const d=STROKES[k],now=i=>i===n-1?' class="now"':'';
-  return `<svg class="steps" viewBox="0 0 109 109" aria-hidden="true">
-    ${d.s.slice(0,n).map((p,i)=>`<path d="${p}"${now(i)}/>`).join('')}
-    ${num?d.n.slice(0,n).map(([x,y],i)=>`<text x="${x}" y="${y}"${now(i)}>${i+1}</text>`).join(''):''}</svg>`;
+  return wrap(k,parts(k).map(({d,o})=>{const now=i=>o+i===n-1?' class="now"':'',m=Math.max(0,n-o);
+    return `<svg class="steps" viewBox="0 0 109 109" aria-hidden="true">
+    ${d.s.slice(0,m).map((p,i)=>`<path d="${p}"${now(i)}/>`).join('')}
+    ${num?d.n.slice(0,m).map(([x,y],i)=>`<text x="${x}" y="${y}"${now(i)}>${o+i+1}</text>`).join(''):''}</svg>`;}));
 }
 
 /** Animate a Practise picture: all its strokes draw themselves in order, so it's clear they're all to be traced. */

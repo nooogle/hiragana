@@ -14,12 +14,13 @@ hiragana/               (this repo)
   css/style.css         all the styling (colours are variables at the top, with dark mode below)
   js/
     app.js              start-up, and the one click handler that routes every button (data-act="...")
-    deck.js             the rows, kana, romaji and look-alike pairs
+    deck.js             the rows, kana, romaji, voice clip names, look-alikes, and the word pairs for small っ
     storage.js          the progress object S, saved to localStorage; backups copy exactly this
     scheduler.js        FSRS: grading answers, unlocking card types, converting old progress
     queues.js           which cards come up: reviews, weakest, run through everything
     sound.js            voice clips and phone speech, and waiting for sounds to finish
-    hints.js            the suggested hints, hint boxes and the hint editor
+    hints.js            hint boxes and the hint editor
+    hintdata.js         the suggested hints (combinations and dakuten ones are built from their parts)
     keys.js             keyboard shortcuts for computers (each key presses a button on screen)
     welcome.js          the welcome slides for first-time users, and the Android Install button
     tips.js             the one-time tips during practice (which ones have been seen is kept in settings)
@@ -37,12 +38,14 @@ hiragana/               (this repo)
                         work offline (built by tools/make_fonts.py)
   icons/                app icons for iPhone, Android and desktop, and the favicons
   manifest.webmanifest  the app's name, icons and colours, used when it's installed
-  audio/                one MP3 per sound, named by romaji
+  audio/                one MP3 per sound, named by romaji. The pair-... clips are the words for small っ
+                        (かった, かた and so on); some are copied from the Katakana drill, since they sound the same
   sw.js                 the offline cache (generated, see below)
   how-it-works.html     the user guide
   how-the-voice-was-made.html
-  tools/                helper scripts: make_sw.py (the offline cache list), make_strokes.py (the stroke data)
-                        and make_fonts.py (the fonts)
+  tools/                helper scripts: make_sw.py (the offline cache list), make_strokes.py (the stroke data),
+                        make_fonts.py (the fonts), and make_voice.py and tidy_voice.py (new voice clips; see the
+                        top of each for how to run them)
   preview/              temporary copies of work in progress, for trying on a phone (see preview/README.md)
 ```
 
@@ -70,4 +73,4 @@ The fonts are kept in the app, not loaded from Google, so they work offline. To 
 
 ## Saved progress
 
-Progress lives in `localStorage` under the key `hiragana-drill-v1`, as one JSON object (`S` in `storage.js`). A backup is that object as text with an `"app":"hiragana-drill"` label added (`js/backup.js`), so a Katakana drill backup pasted into Restore is turned away instead of being loaded. `js/backup.js` has checks you can run with `node --test tests/*.test.mjs`. Keep that format compatible, or add a conversion step like `migrate()` in `scheduler.js`, so nobody loses their progress when the app updates.
+Progress lives in `localStorage` under the key `hiragana-drill-v1`, as one JSON object (`S` in `storage.js`). A backup is that object as text with an `"app":"hiragana-drill"` label added (`js/backup.js`), so a Katakana drill backup pasted into Restore is turned away instead of being loaded. The checks in `tests/` (the deck, hints, stroke data, voice clips and backups) run with `node --test tests/*.test.mjs`. Keep that format compatible, or add a conversion step like `migrate()` in `scheduler.js`, so nobody loses their progress when the app updates.

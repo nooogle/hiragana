@@ -1,7 +1,7 @@
 // Small shared pieces for building screens: the app box, icons, toasts, and the text and colour helpers.
 
 import {S,ymd} from './storage.js';
-import {TYPES} from './deck.js';
+import {TYPES,hasSound} from './deck.js';
 import {activeCards,cardScore,isManual,manualTypes} from './scheduler.js';
 import {canSpeak} from './sound.js';
 
@@ -16,7 +16,7 @@ export const PLAY_ICON=SPK_ICON.replace('width="22" height="22"','width="56" hei
 // "Don't know" counts as a miss, so the card comes back soon instead of being rewarded for a lucky guess
 export const DK='<button class="dk" data-act="answer" data-k="?">Don\'t know</button>';
 
-export function spkBtn(k){return canSpeak?`<button class="spk" data-act="speak" data-k="${k}" aria-label="Play sound">${SPK_ICON}</button>`:'';}
+export function spkBtn(k){return canSpeak&&hasSound(k)?`<button class="spk" data-act="speak" data-k="${k}" aria-label="Play sound">${SPK_ICON}</button>`:'';}
 export function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800);}
 
 /** Colour level for a kana on the chart: -1 not added, 1 learning, 2 shaky, 3 good, 4 solid. */
