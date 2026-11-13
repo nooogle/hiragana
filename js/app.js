@@ -8,7 +8,7 @@ import {ROWMAP,BY} from './deck.js';
 import {backupText,checkBackup} from './backup.js';
 import {migrate} from './scheduler.js';
 import {shuffle,buildReview,buildPractice,buildRunThrough} from './queues.js';
-import {speak} from './sound.js';
+import {speak,speakWord} from './sound.js';
 import {toast} from './ui.js';
 import {closeSheet,rowSheet,settingsSheet,feedbackSheet} from './sheets.js';
 import {closeTip,resetTips} from './tips.js';
@@ -50,13 +50,14 @@ document.addEventListener('click',e=>{
     case 'rownew':if(!S.rows.includes(row))S.rows.push(row);save();closeSheet();renderHome();break;
     case 'rowadd':
       if(!S.rows.includes(row))S.rows.push(row);save();closeSheet();
-      startSession('placement',shuffle([...ROWMAP[row].k].map(k=>k+'|read')));break;
+      startSession('placement',shuffle(ROWMAP[row].k.map(k=>k+'|read')));break;
     case 'rowpractice':closeSheet();startSession('practice',buildPractice(row));break;
     case 'rowremove':
       if(confirm('Remove this row from your chart? Its progress is kept if you add it back.')){S.rows=S.rows.filter(r=>r!==row);save();closeSheet();renderHome();}
       break;
     // Sound
     case 'speak':speak(b.dataset.k);break;
+    case 'speakword':speakWord(b.dataset.t,b.dataset.c);break; // a word from a っ pair
     case 'testvoice':(async()=>{for(const k of ['は','へ','を','ん'])await speak(k);})();break;
     // During a session
     case 'answer':answer(b.dataset.k);break;

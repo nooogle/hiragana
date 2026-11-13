@@ -9,7 +9,7 @@ Read `README.md` before working on the code.
 ## Layout
 
 - The app is at the top of the repo: `index.html`, `css/`, `js/`, `vendor/`, `icons/`, `audio/`, `sw.js` and so on.
-- `tools/`: helper scripts, run from the top of the repo (`make_sw.py` for the offline cache list, `make_strokes.py` for the stroke data, `make_fonts.py` for the fonts).
+- `tools/`: helper scripts, run from the top of the repo (`make_sw.py` for the offline cache list, `make_strokes.py` for the stroke data, `make_fonts.py` for the fonts, `make_voice.py` and `tidy_voice.py` for new voice clips).
 - `preview/`: temporary copies of work in progress for trying on a phone. See `preview/README.md`. Delete the copy once the work is merged.
 - `.nojekyll`: tells GitHub Pages to serve files as they are.
 

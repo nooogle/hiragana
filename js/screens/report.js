@@ -1,7 +1,7 @@
 // The Progress screen, and the plain-text version used by "Share this report".
 
 import {S,ymd} from '../storage.js';
-import {KANA,BY} from '../deck.js';
+import {KANA,BY,mixKey,mixParts} from '../deck.js';
 import {app,level,streak,toast} from '../ui.js';
 import {endSession} from './session.js';
 
@@ -23,7 +23,7 @@ function reportData(){
   const misses={},pairs={};
   log.filter(l=>l.t>=today.getTime()-13*DAY&&!l.ok).forEach(l=>{
     const k=l.id.split('|')[0];misses[k]=(misses[k]||0)+1;
-    if(l.c){const p=[k,l.c].sort().join('');pairs[p]=(pairs[p]||0)+1;}
+    if(l.c){const p=mixKey(k,l.c);if(p)pairs[p]=(pairs[p]||0)+1;}
   });
   const levels=[0,0,0,0,0];KANA.forEach(it=>{const v=level(it);if(v>=1)levels[v]++;});
   const w=days.slice(7);
@@ -59,7 +59,7 @@ export function renderReport(){
     <div class="legend">${[1,2,3,4].map(i=>`<span><i style="background:var(--l${i})"></i>${names[i]} ${R.levels[i]}</span>`).join('')}<span>Not added ${KANA.length-R.added}</span></div>
     <h2>Accuracy this week</h2><div class="list">${types}${R.dk?`<div class="li"><span>Don't know (counted as misses)</span><span>${R.dk}</span></div>`:''}</div>
     ${R.hard.length?`<h2>Most missed, last two weeks</h2><div class="chips">${R.hard.map(([k,n])=>`<span class="chip"><span class="kana">${k}</span><small>${BY[k].r}, missed ${n}</small></span>`).join('')}</div>`:''}
-    ${R.pairs.length?`<h2>Often mixed up</h2><div class="list">${R.pairs.map(([p,n])=>`<div class="li"><span class="kana" style="font-size:1.5rem">${[...p].join(' and ')}</span><span>${n} times</span></div>`).join('')}</div>`:''}
+    ${R.pairs.length?`<h2>Often mixed up</h2><div class="list">${R.pairs.map(([p,n])=>`<div class="li"><span class="kana" style="font-size:1.5rem">${mixParts(p).join(' and ')}</span><span>${n} times</span></div>`).join('')}</div>`:''}
     <button class="primary" data-act="share" style="margin-top:24px">Share this report</button>
     <p class="hint">Placement checks aren't counted. Minutes are estimated from answer times.</p>
   </div>`;
@@ -74,7 +74,7 @@ export function reportText(){
   ['read','recall','listen','write'].forEach(k=>{const t=R.types[k];if(t.n)lines.push(`${TYPE_NAME[k]}: ${pct(t.ok,t.n)} of ${t.n}`);});
   if(R.dk)lines.push(`Tapped "Don't know" ${R.dk} ${R.dk===1?'time':'times'}`);
   if(R.hard.length)lines.push('Most missed: '+R.hard.slice(0,6).map(([k,n])=>`${k} (${BY[k].r}) ${n}x`).join(', '));
-  if(R.pairs.length)lines.push('Mixed up: '+R.pairs.map(([p])=>[...p].join('/')).join(', '));
+  if(R.pairs.length)lines.push('Mixed up: '+R.pairs.map(([p])=>mixParts(p).join('/')).join(', '));
   return lines.join('\n');
 }
 

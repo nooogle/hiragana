@@ -43,9 +43,10 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 
 .chart h2{font-size:.95rem;margin:18px 2px 8px;color:var(--muted);font-weight:700}
 .row{display:flex;align-items:center;gap:8px;width:100%;background:none;border:0;padding:3px 0;text-align:left}
-.cells{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;flex:1}
+.cells{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;flex:1}
 .cell{aspect-ratio:1;display:grid;place-items:center;border-radius:9px;font-family:var(--kana);font-size:1.45rem;font-weight:600;background:var(--l0)}
 .row.off .cell{color:var(--muted);background:transparent;border:1.5px dashed var(--line)}
+.cell.two{font-size:1.1rem;letter-spacing:-.12em;white-space:nowrap} /* two-character entries (きゃ) */
 .tag{width:40px;flex:none;font-size:.82rem;font-weight:700;color:var(--accent);text-align:center}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:16px 2px 0}
 .howlink{margin:22px 2px 0;font-size:.95rem}
@@ -76,6 +77,13 @@ button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:tra
 .sq::before,.wsq::before,.wcell::before,.pmodel::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px dashed var(--guide)}
 .sq::after,.wsq::after,.wcell::after,.pmodel::after{content:"";position:absolute;top:50%;left:0;right:0;border-top:1px dashed var(--guide)}
 .sq .big{position:relative;z-index:1;font-family:var(--kana);font-size:min(38vw,150px);line-height:1;font-weight:400}
+.sq .big.two{font-size:min(26vw,100px);letter-spacing:-.08em} /* きゃ */
+.sq .big.three{font-size:min(19vw,74px);letter-spacing:-.06em} /* かった */
+/* The two words of a っ pair, tap to hear each one */
+.pairs{display:flex;gap:10px;justify-content:center;margin:14px 0 0}
+.pw{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:104px;padding:8px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink)}
+.pw .kana{font-family:var(--kana);font-size:1.8rem;font-weight:600}
+.pw small{font-weight:700;color:var(--muted)}
 .sq .roma{position:relative;z-index:1;font-size:min(15vw,60px);font-weight:700}
 .model{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--kana);font-size:min(60vw,230px);line-height:1;color:var(--accent);opacity:0;z-index:1;pointer-events:none}
 .model.show{opacity:.3}
@@ -102,14 +110,29 @@ canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:n
 .psteps li{flex:1;text-align:center;font-size:.78rem;font-weight:700;color:var(--muted);padding:5px 0;border:1.5px solid var(--line);border-radius:999px}
 .psteps li.now{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .psteps li.done{color:var(--ok)}
-.ghost .strokes,.pmodel>.strokes{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ghost .strokes,.pmodel>.strokes,.pmodel>.multi .strokes{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke-linecap:round;stroke-linejoin:round}
 .ghost .strokes{stroke:var(--bad);stroke-width:4;opacity:.3}
-.pmodel>.strokes{stroke:var(--ink);stroke-width:4}
-.pmodel>.strokes text{fill:var(--accent);stroke:var(--card);stroke-width:2;paint-order:stroke;font:700 12px var(--ui)}
+.pmodel>.strokes,.pmodel>.multi .strokes{stroke:var(--ink);stroke-width:4}
+.pmodel>.strokes text,.pmodel>.multi .strokes text{fill:var(--accent);stroke:var(--card);stroke-width:2;paint-order:stroke;font:700 12px var(--ui)}
 .pmodel .trace .strokes text{font-size:12px;stroke-width:2} /* the small box needs bigger numbers */
 .pside{display:flex;gap:10px;align-items:flex-start;justify-content:center;width:min(92vw,420px)}
 .pside .wsq{flex:none;width:min(60vw,260px)}
 .pmodel{position:relative;flex:none;width:min(28vw,130px);aspect-ratio:1;background:var(--card);border:1.5px solid var(--line);border-radius:6px}
+/* Two-character entries (きゃ): double-width boxes with a solid line between the halves and a dashed guide down
+   the middle of each. A stroke picture for each character sits side by side in .multi. */
+.multi{position:absolute;inset:0;display:flex}
+.multi>svg{position:static!important;flex:1 1 0;min-width:0;width:auto!important;height:100%!important}
+.wsq.two,.pmodel.two,.wcell.two{aspect-ratio:2/1;background-repeat:no-repeat;
+  background-image:linear-gradient(var(--line),var(--line)),repeating-linear-gradient(to bottom,var(--guide) 0 3px,transparent 3px 6px),repeating-linear-gradient(to bottom,var(--guide) 0 3px,transparent 3px 6px);
+  background-size:2px 100%,1px 100%,1px 100%;background-position:50% 0,25% 0,75% 0}
+.wsq.two::before,.pmodel.two::before,.wcell.two::before{display:none}
+.wsq.two{width:min(92vw,420px)}
+.wsq.two .model{grid-template-columns:1fr 1fr;font-size:min(40vw,180px)}
+.wsq.two .model span{display:grid;place-items:center}
+.pside.two{flex-direction:column;align-items:center}
+.pside.two .wsq{width:min(92vw,420px)}
+.pside.two .pmodel{width:min(56vw,220px)}
+.wcell.two{max-width:76px}
 .wstep{color:var(--muted);font-weight:700;margin:12px 0 0;text-align:center}
 .romaline{font-size:2rem;font-weight:700;margin:0 0 12px;display:flex;align-items:center;gap:12px}
 .romaline .spk{margin:0}

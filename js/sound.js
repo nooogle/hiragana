@@ -2,10 +2,10 @@
 // Also makes sure sounds never overlap and that nothing moves on before a sound has finished.
 
 import {S} from './storage.js';
-import {BY} from './deck.js';
+import {BY,hasSound} from './deck.js';
 
-// Voice clips: Google Cloud Text-to-Speech, one MP3 per kana in audio/, named by romaji (ぢ and づ as di and du)
-const AUDIO_FILE=k=>{const it=BY[k];return it?'audio/'+({'ぢ':'di','づ':'du'}[k]||it.r)+'.mp3':null;};
+// Voice clips: Google Cloud Text-to-Speech, one MP3 per entry in audio/, named in the deck (BY[k].a; see tools/clips.mjs)
+const AUDIO_FILE=k=>{const it=BY[k];return it&&it.a?'audio/'+it.a+'.mp3':null;};
 export const hasTTS='speechSynthesis' in window;
 export const canSpeak=true;
 const player=new Audio();player.preload='auto';
@@ -48,19 +48,23 @@ export function autoSpeak(k,stillHere=()=>true){
   soundDone.then(()=>{if(stillHere())speak(k);});
 }
 
-/** Play a kana straight away; returns a promise that settles when it has finished. */
-export function speak(text){
+/** Play a kana straight away (or text, with its clip), and return a promise that settles when it has finished.
+ *  If the clip won't play (say it hasn't been made yet), the phone's own voice says it instead. */
+export function speak(text,clip=AUDIO_FILE(text)){
   if(endSound)endSound(); // a new sound replaces one that's still going
   let settled=false,resolve;
   soundDone=new Promise(r=>{resolve=r;});
   const finish=()=>{if(settled)return;settled=true;if(endSound===finish)endSound=null;setTimeout(resolve,SOUND_GAP);};
   endSound=finish;
   setTimeout(finish,SOUND_MAX); // never wait forever if the phone doesn't report the end
-  const clip=AUDIO_FILE(text);
   if(clip&&S.settings.voice!=='phone'){
-    try{player.onended=finish;player.onerror=finish;player.muted=false;player.src=clip;player.currentTime=0;
+    try{player.onended=finish;player.onerror=()=>{if(!speakTTS(text,finish))finish();};player.muted=false;player.src=clip;player.currentTime=0;
       const p=player.play();if(p&&p.catch)p.catch(finish);return soundDone;}catch(e){}
   }
+  if(BY[text]&&!hasSound(text)){finish();return soundDone;} // っ: nothing to say on its own
   if(!speakTTS(text,finish))finish();
   return soundDone;
 }
+
+/** Play a made-up word from a っ pair (かった, かた) by its clip name. */
+export const speakWord=(text,name)=>speak(text,'audio/'+name+'.mp3');

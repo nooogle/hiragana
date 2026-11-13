@@ -20,14 +20,14 @@ export function rowSheet(id){
   if(on){
     openSheet(`<h2>The ${row.k[0]} row</h2>
       <p class="sub" style="margin-bottom:6px">Tap a kana to see or change its hint.</p>
-      <div class="hintkeys">${[...row.k].map(k=>`<button class="${S.hints[k]?'mine':''}" data-act="edithint" data-k="${k}" aria-label="Hint for ${BY[k].r}">${k}</button>`).join('')}</div>
+      <div class="hintkeys">${row.k.map(k=>`<button class="${S.hints[k]?'mine':''}" data-act="edithint" data-k="${k}" aria-label="Hint for ${BY[k].r}">${k}</button>`).join('')}</div>
       <button class="primary" data-act="rowpractice" data-row="${id}">Practise this row</button>
       <button class="secondary" data-act="rowremove" data-row="${id}">Remove from my chart</button>
       <button class="secondary" data-act="close">Cancel</button>`);
     return;
   }
   const baseNote=row.base&&!S.rows.includes(row.base)?`<p class="sub">Tip: these build on the ${ROWMAP[row.base].k[0]} row, which isn't in your chart yet.</p>`:'';
-  openSheet(`<h2>Add the ${row.k[0]} row</h2><p class="preview kana">${row.k}</p>${baseNote}
+  openSheet(`<h2>Add the ${row.k[0]} row</h2><p class="preview kana">${row.k.join(' ')}</p>${baseNote}
     <button class="primary" data-act="rowadd" data-row="${id}">I already know these</button>
     <p class="sub" style="margin-top:8px">You'll get a quick check. Any you miss start from the beginning.</p>
     <button class="secondary" data-act="rownew" data-row="${id}">They're new to me</button>
