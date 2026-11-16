@@ -6,6 +6,4 @@ e.g. <https://nooogle.github.io/hiragana/preview/my-branch/>.
 They're not linked from anywhere, keep their own separate progress and offline cache (the real app leaves
 anything under `/preview/` alone), and get deleted once the work is merged.
 
-Previews at the moment:
-
-- [blank-pad](https://nooogle.github.io/hiragana/preview/blank-pad/): Don't know (or Check on a blank pad) shows just the answer, with no empty pad beside it.
+No previews at the moment.
