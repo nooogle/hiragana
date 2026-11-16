@@ -255,11 +255,11 @@ function showPStep(){
   const clear=`<button class="secondary" data-act="clear">Clear</button>`;
   let box,say,btns;
   if(step===1){
-    box=`<div class="wsq${two(k)}"><button class="trace" id="trace" data-act="strokes" data-plain="1" aria-label="${k}: tap to watch the strokes again"></button></div>`;
+    box=`<div class="pside${two(k)}"><div class="wsq${two(k)}"><button class="trace" id="trace" data-act="strokes" data-plain="1" aria-label="${k}: tap to watch the strokes again"></button></div></div>`;
     say='Watch the strokes go in';
     btns=`<button class="secondary" data-act="pwatch">Replay</button><button class="primary" data-act="pnext">Next</button>`;
   }else if(step===2){
-    box=`<div class="wsq${two(k)}"><span class="guide ghost" id="guide">${strokesSVG(k,false)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div>`;
+    box=`<div class="pside${two(k)}"><div class="wsq${two(k)}"><span class="guide ghost" id="guide">${strokesSVG(k,false)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div></div>`;
     say='Trace over it, in order';
     btns=`${clear}<button class="primary" data-act="pnext">Next</button>`;
   }else{
