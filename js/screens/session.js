@@ -48,7 +48,7 @@ function bar(){
 function renderCard(){
   if(sess.pos>=sess.queue.length)return renderDone();
   const id=sess.queue[sess.pos],[k,type]=id.split('|'),it=BY[k];
-  sess.answered=false;sess.t0=performance.now();sess.listen=false;sess.ws=null;sess.ps=null;sess.pair=null;
+  sess.answered=false;sess.retried=false;sess.t0=performance.now();sess.listen=false;sess.ws=null;sess.ps=null;sess.pair=null;
   if(PAIRS[k]&&type!=='write'){renderPairCard(id,k,type,it);showTips();return;} // っ
   if(type==='read'&&!S.cards[id]&&sess.mode==='review'){
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">New one to learn</p><div class="sq"><span class="big${len(k)}">${k}</span></div>
@@ -214,16 +214,42 @@ export function replayStrokes(){
   return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0],!box.dataset.plain)); // data-plain: no numbers
 }
 
-/** The self-mark on a writing card. "Got it" moves straight on; "Not quite" (or "Don't know", dk) shows the hint and offers more goes at it. */
+/** The self-mark on a writing card. "Got it" moves straight on. "Not quite" clears the box and the answer so they can
+ *  have another go (with the hint showing). Only the first go counts towards the schedule; later goes are just practice.
+ *  "Don't know" (dk) keeps the answer on screen, with Try again and Next. */
 export function selfGrade(ok,dk){
   if(sess.answered)return;sess.answered=true;
   const k=sess.queue[sess.pos].split('|')[0];
-  record(sess.queue[sess.pos],ok);
-  if(dk){S.log[S.log.length-1].dk=true;save();}
+  if(!sess.retried){
+    record(sess.queue[sess.pos],ok);
+    if(dk){S.log[S.log.length-1].dk=true;save();}
+  }
   if(ok){next();return;}
-  document.getElementById('wbtns').outerHTML=`${hintBox(k)}<div class="btns2" id="wbtns"><button class="secondary" data-act="practise">Practise</button><button class="primary" data-act="next">Next</button></div>`;
-  {const nx=document.querySelector('#wbtns [data-act="next"]');if(nx&&nx.scrollIntoView)nx.scrollIntoView({block:'nearest',behavior:'smooth'});}
+  if(dk){
+    showHint(k);
+    document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="retry">Try again</button><button class="primary" data-act="next">Next</button>`;
+  }else retryWriting();
   showTips();
+}
+
+// The hint, just above the buttons (replacing any already there)
+function showHint(k){
+  const old=document.getElementById('rhint');if(old)old.remove();
+  document.getElementById('wbtns').insertAdjacentHTML('beforebegin',`<div id="rhint">${hintBox(k)}</div>`);
+}
+
+/** Another go at the same kana: clear their writing and the answer, keep the hint, and Check again. Doesn't change the schedule. */
+export function retryWriting(){
+  if(!sess)return;
+  const k=sess.queue[sess.pos].split('|')[0],cv=document.getElementById('cv');
+  sess.retried=true;sess.answered=false;
+  morph(()=>{
+    cv.clear();delete cv.dataset.locked;
+    const m=document.querySelector('#pside .pmodel');if(m)m.remove();
+    const md=document.getElementById('model');if(md)md.classList.remove('show');
+    showHint(k);
+    document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="clear">Clear</button><button class="primary" data-act="check">Check</button>`;
+  });
 }
 
 // ----- Practise -----

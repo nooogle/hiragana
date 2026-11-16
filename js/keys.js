@@ -34,6 +34,6 @@ document.addEventListener('keydown',e=>{
   else if(k==='y')done=press('[data-act="self"][data-ok="1"]');
   else if(k==='n')done=press('[data-act="self"][data-ok="0"]');
   else if(k==='p'||k==='r')done=press('.play')||press('.spk');
-  else if(k==='c')done=press('[data-act="clear"]')||press('[data-act="practise"]');
+  else if(k==='c')done=press('[data-act="clear"]')||press('[data-act="retry"]');
   if(done)e.preventDefault(); // e.g. stop Space scrolling the page
 });

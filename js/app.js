@@ -16,7 +16,7 @@ import {needsWelcome,renderWelcome,welcomeNext,finishWelcome,install} from './we
 import {editHint,setHint} from './hints.js';
 import {renderHome} from './screens/home.js';
 import {renderReport,reportText,copyText} from './screens/report.js';
-import {startSession,answer,next,introOk,noSound,clearDrawing,checkWriting,dontKnowWriting,selfGrade,replayStrokes,practiseWriting,nextStep,showPractised,pWatch,pNext,pDone} from './screens/session.js';
+import {startSession,answer,next,introOk,noSound,clearDrawing,checkWriting,dontKnowWriting,selfGrade,retryWriting,replayStrokes,practiseWriting,nextStep,showPractised,pWatch,pNext,pDone} from './screens/session.js';
 import './keys.js'; // keyboard shortcuts for computers (sets itself up when loaded)
 
 document.addEventListener('click',e=>{
@@ -70,6 +70,7 @@ document.addEventListener('click',e=>{
     case 'self':selfGrade(b.dataset.ok==='1');break;
     case 'strokes':replayStrokes();break;
     case 'practise':practiseWriting();break;
+    case 'retry':retryWriting();break;
     case 'wstep':nextStep();break;
     case 'wshow':showPractised();break;
     case 'pwatch':pWatch();break;
