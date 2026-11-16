@@ -6,6 +6,4 @@ e.g. <https://nooogle.github.io/hiragana/preview/my-branch/>.
 They're not linked from anywhere, keep their own separate progress and offline cache (the real app leaves
 anything under `/preview/` alone), and get deleted once the work is merged.
 
-Previews at the moment:
-
-- [check-layout](https://nooogle.github.io/hiragana/preview/check-layout/): after Check on a writing card, the stroke order plays in a small box beside the user's writing instead of over it.
+No previews at the moment.
