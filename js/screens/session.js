@@ -79,7 +79,7 @@ function renderCard(){
     }
   }else{
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">Write this one</p><p class="romaline">${it.r}${spkBtn(k)}</p>
-      <div class="wsq${two(k)}"><span class="model" id="model">${modelText(k)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div>
+      <div class="pside${two(k)}" id="pside"><div class="wsq${two(k)}"><span class="model" id="model">${modelText(k)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div></div>
       <div class="btns2" id="wbtns"><button class="secondary" data-act="clear">Clear</button><button class="primary" data-act="check">Check</button></div>
       <button class="dk" data-act="wdk">Don't know</button></div>`;
     setupCanvas(document.getElementById('cv'));
@@ -197,16 +197,16 @@ export function checkWriting(){
 /** "Don't know" on a writing card: show the answer and mark it as a miss, with no self-mark to make. */
 export function dontKnowWriting(){showStrokes();selfGrade(false,true);}
 
-/** Draw the right kana's strokes in red over the drawing, one at a time in order. Tapping the box plays them again. */
+/** Show the right kana's strokes, one at a time in order, in a small box beside the drawing (which is left as it is). Tapping the small box plays them again. */
 function showStrokes(){
   const cv=document.getElementById('cv');cv.dataset.locked='1';
   const k=sess.queue[sess.pos].split('|')[0];
   {const d=document.querySelector('.dk');if(d)d.remove();}
-  cv.insertAdjacentHTML('afterend',`<button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button>`);
+  document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel${two(k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button></span>`);
   if(!replayStrokes())document.getElementById('model').classList.add('show'); // no stroke data: show the plain kana instead
 }
 
-/** Play the stroke order animation over the drawing. Returns false if there's no stroke data for this kana. */
+/** Play the stroke order animation in the small answer box. Returns false if there's no stroke data for this kana. */
 export function replayStrokes(){
   const box=document.getElementById('trace');
   return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0],!box.dataset.plain)); // data-plain: no numbers

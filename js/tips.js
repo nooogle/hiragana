@@ -7,7 +7,7 @@ import {S,save} from './storage.js';
 // In priority order: when several could show at once, only the first unseen one does (the rest wait for next time).
 // sel finds the thing the tip points at (and need, if given, must be inside it); the bubble goes just below it.
 const TIPS=[
-  {id:'strokes',sel:'.wsq',need:'.trace',text:'<b>Watch the stroke order</b>, drawn in red over yours. Tap the box to see it again.'},
+  {id:'strokes',sel:'.pside',need:'.trace',text:'<b>Watch the stroke order</b> in the small box. Tap it to see it again.'},
   {id:'practise',sel:'#wbtns',need:'[data-act="practise"]',text:'<b>Practise</b> takes you through writing it step by step, like a practice sheet. It won\'t change your mark.'},
   {id:'dk',sel:'.dk',text:'<b>Not sure? Tap Don\'t know.</b> A lucky guess hides a kana you haven\'t learnt yet.'},
   {id:'listen',sel:'#lsq',need:'.play',text:'<b>A listening card.</b> Tap the speaker to hear it again. Somewhere you can\'t play sound? There\'s a button for that below.'},
