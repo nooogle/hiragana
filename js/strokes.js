@@ -22,11 +22,11 @@ function drawIn(p,delay){
 /** Add html (the small answer box) at the start of side, the row holding the writing box. The writing box slides across
  *  to make room and the new box fades in; then done() runs (straight away if there's no animation). */
 export function slideIn(side,html,done){
-  const box=side.querySelector('.wsq'),before=box.getBoundingClientRect();
+  const box=side.querySelector('.wsq'),solo=side.classList.contains('solo'),before=box.getBoundingClientRect();
   side.insertAdjacentHTML('afterbegin',html);
   if(!canAnimate()){done();return;}
   const after=box.getBoundingClientRect(),ease='cubic-bezier(.2,.8,.2,1)',timing={duration:SLIDE_MS,easing:ease};
-  box.animate([{transform:`translate(${before.left-after.left}px,${before.top-after.top}px)`},{transform:'none'}],timing);
+  if(!solo)box.animate([{transform:`translate(${before.left-after.left}px,${before.top-after.top}px)`},{transform:'none'}],timing);
   side.firstElementChild.animate([{opacity:0,transform:'scale(.85)'},{opacity:1,transform:'none'}],timing).finished.then(done,done);
 }
 const SLIDE_MS=333;

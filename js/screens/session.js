@@ -189,22 +189,26 @@ export function clearDrawing(){
 
 /** "Check" on a writing card: show the answer, then ask for a self-mark. */
 export function checkWriting(){
+  if(document.getElementById('cv').blank()){dontKnowWriting();return;} // nothing drawn: same as "Don't know"
   showStrokes();
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="self" data-ok="0">Not quite</button><button class="primary" data-act="self" data-ok="1">Got it</button>`;
   showTips();
 }
 
 /** "Don't know" on a writing card: show the answer and mark it as a miss, with no self-mark to make. */
-export function dontKnowWriting(){showStrokes();selfGrade(false,true);}
+export function dontKnowWriting(){showStrokes(true);selfGrade(false,true);}
 
 /** Show the right kana's strokes, one at a time in order, in a small box beside the drawing (which is left as it is). Tapping the small box plays them again. */
-function showStrokes(){
+function showStrokes(blank){
   const cv=document.getElementById('cv');cv.dataset.locked='1';
   const k=sess.queue[sess.pos].split('|')[0];
+  if(blank)document.getElementById('pside').classList.add('solo'); // nothing was drawn: show the answer on its own, with no empty pad beside it
   {const d=document.querySelector('.dk');if(d)d.remove();}
   slideIn(document.getElementById('pside'),`<span class="pmodel${two(k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button></span>`,()=>{
     const m=document.getElementById('model');
-    if(!replayStrokes()&&m)m.classList.add('show'); // no stroke data: show the plain kana instead
+    if(replayStrokes())return;
+    if(blank)document.getElementById('trace').parentNode.innerHTML=`<span class="model show" style="opacity:1">${modelText(k)}</span>`; // no stroke data: show the plain kana instead
+    else if(m)m.classList.add('show');
   });
 }
 
@@ -245,6 +249,7 @@ export function retryWriting(){
   sess.retried=true;sess.answered=false;
   morph(()=>{
     cv.clear();delete cv.dataset.locked;
+    document.getElementById('pside').classList.remove('solo');
     const m=document.querySelector('#pside .pmodel');if(m)m.remove();
     const md=document.getElementById('model');if(md)md.classList.remove('show');
     showHint(k);
