@@ -9,7 +9,7 @@ import {canSpeak,speak,speakWord,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG,slideIn} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -202,8 +202,10 @@ function showStrokes(){
   const cv=document.getElementById('cv');cv.dataset.locked='1';
   const k=sess.queue[sess.pos].split('|')[0];
   {const d=document.querySelector('.dk');if(d)d.remove();}
-  document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel${two(k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button></span>`);
-  if(!replayStrokes())document.getElementById('model').classList.add('show'); // no stroke data: show the plain kana instead
+  slideIn(document.getElementById('pside'),`<span class="pmodel${two(k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button></span>`,()=>{
+    const m=document.getElementById('model');
+    if(!replayStrokes()&&m)m.classList.add('show'); // no stroke data: show the plain kana instead
+  });
 }
 
 /** Play the stroke order animation in the small answer box. Returns false if there's no stroke data for this kana. */
@@ -293,8 +295,7 @@ export function pDone(){
   if(!sess||!sess.ps)return;
   const w=sess.ps;
   document.getElementById('cv').dataset.locked='1';
-  document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel${two(w.k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`);
-  replayStrokes();
+  slideIn(document.getElementById('pside'),`<span class="pmodel${two(w.k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`,replayStrokes);
   document.getElementById('wstep').textContent='Tap the answer to watch it again';
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="practise">Again</button><button class="primary" data-act="next">Next</button>`;
 }
