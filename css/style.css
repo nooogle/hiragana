@@ -231,3 +231,7 @@ textarea{width:100%;min-height:70px;border-radius:12px;border:1.5px solid var(--
   [data-act="self"][data-ok="1"]::after{content:"Y"}
   [data-act="self"][data-ok="0"]::after{content:"N"}
 }
+/* Nothing was drawn: just the answer, full size, with no empty pad beside it */
+.pside.solo .wsq{display:none}
+.pside.solo .pmodel{width:min(60vw,260px)}
+.pside.two.solo .pmodel{width:min(92vw,420px)}
