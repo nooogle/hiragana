@@ -6,4 +6,6 @@ e.g. <https://nooogle.github.io/hiragana/preview/my-branch/>.
 They're not linked from anywhere, keep their own separate progress and offline cache (the real app leaves
 anything under `/preview/` alone), and get deleted once the work is merged.
 
-No previews at the moment.
+Previews at the moment:
+
+- [retry](https://nooogle.github.io/hiragana/preview/retry/): "Not quite" clears the box and the answer for another go (hint showing), instead of the 4-step practice. Only the first go counts.
