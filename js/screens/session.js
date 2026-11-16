@@ -9,7 +9,7 @@ import {canSpeak,speak,speakWord,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG,slideIn} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG,slideIn,morph} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -268,9 +268,11 @@ function showPStep(){
     say=step===3?'Copy it, in order':'Now write it from memory';
     btns=`${clear}<button class="primary" data-act="${step===3?'pnext':'pdone'}">${step===3?'Next':'Done'}</button>`;
   }
-  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
+  morph(()=>{
+    document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
     <p class="romaline">${it.r}${spkBtn(k)}</p>${box}<p class="wstep" id="wstep">${say}</p>
     <div class="btns2" id="wbtns">${btns}</div>`;
+  });
   if(step===1){pWatch();return;}
   setupCanvas(document.getElementById('cv'));
   if(step===2)drawInStep(document.getElementById('guide'));
@@ -314,10 +316,12 @@ const STEP_PAUSE_MS=700;
 function practiseClassic(k,n){
   sess.ws={k,n,step:1};
   const cells=Array.from({length:n+1},(_,i)=>`<span class="wcell${two(k)}" id="wc${i+1}">${i<n?stepSVG(k,i+1):''}</span>`).join('');
-  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>
+  morph(()=>{
+    document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>
     <div class="wrow"><span class="wrom">${BY[k].r}</span>${cells}</div>
     <div class="wsq${two(k)}"><span class="guide" id="guide"></span><canvas id="cv" aria-label="Drawing area"></canvas></div>
     <p class="wstep" id="wstep"></p><div class="btns2" id="wbtns"></div>`;
+  });
   const cv=document.getElementById('cv');
   setupCanvas(cv);
   cv.onStrokeStart=()=>clearTimeout(sess.ws.timer);
