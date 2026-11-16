@@ -9,7 +9,7 @@ import {canSpeak,speak,speakWord,autoSpeak,whenSoundDone} from '../sound.js';
 import {app,spkBtn,toast,PLAY_ICON,DK} from '../ui.js';
 import {hintBox} from '../hints.js';
 import {setupCanvas} from '../drawing.js';
-import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG} from '../strokes.js';
+import {playStrokes,strokeCount,stepSVG,drawInStep,strokesSVG,slideIn,morph} from '../strokes.js';
 import {showTips} from '../tips.js';
 
 export let sess=null;
@@ -79,7 +79,7 @@ function renderCard(){
     }
   }else{
     app.innerHTML=`${bar()}<div class="stage"><p class="ask">Write this one</p><p class="romaline">${it.r}${spkBtn(k)}</p>
-      <div class="wsq${two(k)}"><span class="model" id="model">${modelText(k)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div>
+      <div class="pside${two(k)}" id="pside"><div class="wsq${two(k)}"><span class="model" id="model">${modelText(k)}</span><canvas id="cv" aria-label="Drawing area"></canvas></div></div>
       <div class="btns2" id="wbtns"><button class="secondary" data-act="clear">Clear</button><button class="primary" data-act="check">Check</button></div>
       <button class="dk" data-act="wdk">Don't know</button></div>`;
     setupCanvas(document.getElementById('cv'));
@@ -197,16 +197,18 @@ export function checkWriting(){
 /** "Don't know" on a writing card: show the answer and mark it as a miss, with no self-mark to make. */
 export function dontKnowWriting(){showStrokes();selfGrade(false,true);}
 
-/** Draw the right kana's strokes in red over the drawing, one at a time in order. Tapping the box plays them again. */
+/** Show the right kana's strokes, one at a time in order, in a small box beside the drawing (which is left as it is). Tapping the small box plays them again. */
 function showStrokes(){
   const cv=document.getElementById('cv');cv.dataset.locked='1';
   const k=sess.queue[sess.pos].split('|')[0];
   {const d=document.querySelector('.dk');if(d)d.remove();}
-  cv.insertAdjacentHTML('afterend',`<button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button>`);
-  if(!replayStrokes())document.getElementById('model').classList.add('show'); // no stroke data: show the plain kana instead
+  slideIn(document.getElementById('pside'),`<span class="pmodel${two(k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${k}. Tap to see the stroke order again"></button></span>`,()=>{
+    const m=document.getElementById('model');
+    if(!replayStrokes()&&m)m.classList.add('show'); // no stroke data: show the plain kana instead
+  });
 }
 
-/** Play the stroke order animation over the drawing. Returns false if there's no stroke data for this kana. */
+/** Play the stroke order animation in the small answer box. Returns false if there's no stroke data for this kana. */
 export function replayStrokes(){
   const box=document.getElementById('trace');
   return !!(box&&sess&&playStrokes(box,sess.queue[sess.pos].split('|')[0],!box.dataset.plain)); // data-plain: no numbers
@@ -266,9 +268,11 @@ function showPStep(){
     say=step===3?'Copy it, in order':'Now write it from memory';
     btns=`${clear}<button class="primary" data-act="${step===3?'pnext':'pdone'}">${step===3?'Next':'Done'}</button>`;
   }
-  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
+  morph(()=>{
+    document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p><ol class="psteps">${steps}</ol>
     <p class="romaline">${it.r}${spkBtn(k)}</p>${box}<p class="wstep" id="wstep">${say}</p>
     <div class="btns2" id="wbtns">${btns}</div>`;
+  });
   if(step===1){pWatch();return;}
   setupCanvas(document.getElementById('cv'));
   if(step===2)drawInStep(document.getElementById('guide'));
@@ -293,8 +297,7 @@ export function pDone(){
   if(!sess||!sess.ps)return;
   const w=sess.ps;
   document.getElementById('cv').dataset.locked='1';
-  document.getElementById('pside').insertAdjacentHTML('afterbegin',`<span class="pmodel${two(w.k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`);
-  replayStrokes();
+  slideIn(document.getElementById('pside'),`<span class="pmodel${two(w.k)}"><button class="trace" id="trace" data-act="strokes" aria-label="Correct answer: ${w.k}. Tap to see the stroke order again"></button></span>`,replayStrokes);
   document.getElementById('wstep').textContent='Tap the answer to watch it again';
   document.getElementById('wbtns').innerHTML=`<button class="secondary" data-act="practise">Again</button><button class="primary" data-act="next">Next</button>`;
 }
@@ -313,10 +316,12 @@ const STEP_PAUSE_MS=700;
 function practiseClassic(k,n){
   sess.ws={k,n,step:1};
   const cells=Array.from({length:n+1},(_,i)=>`<span class="wcell${two(k)}" id="wc${i+1}">${i<n?stepSVG(k,i+1):''}</span>`).join('');
-  document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>
+  morph(()=>{
+    document.querySelector('.stage').innerHTML=`<p class="ask">Practise writing it</p>
     <div class="wrow"><span class="wrom">${BY[k].r}</span>${cells}</div>
     <div class="wsq${two(k)}"><span class="guide" id="guide"></span><canvas id="cv" aria-label="Drawing area"></canvas></div>
     <p class="wstep" id="wstep"></p><div class="btns2" id="wbtns"></div>`;
+  });
   const cv=document.getElementById('cv');
   setupCanvas(cv);
   cv.onStrokeStart=()=>clearTimeout(sess.ws.timer);

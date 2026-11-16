@@ -19,6 +19,33 @@ function drawIn(p,delay){
   return duration;
 }
 
+/** Add html (the small answer box) at the start of side, the row holding the writing box. The writing box slides across
+ *  to make room and the new box fades in; then done() runs (straight away if there's no animation). */
+export function slideIn(side,html,done){
+  const box=side.querySelector('.wsq'),before=box.getBoundingClientRect();
+  side.insertAdjacentHTML('afterbegin',html);
+  if(!canAnimate()){done();return;}
+  const after=box.getBoundingClientRect(),ease='cubic-bezier(.2,.8,.2,1)',timing={duration:SLIDE_MS,easing:ease};
+  box.animate([{transform:`translate(${before.left-after.left}px,${before.top-after.top}px)`},{transform:'none'}],timing);
+  side.firstElementChild.animate([{opacity:0,transform:'scale(.85)'},{opacity:1,transform:'none'}],timing).finished.then(done,done);
+}
+const SLIDE_MS=333;
+
+/** Run render(), which redraws the stage, and make the writing box glide from where it was to where it now is
+ *  (changing size too if it has to), with any new small box fading in. Without animation it's just render(). */
+export function morph(render){
+  const old=document.querySelector('.stage .wsq'),before=old&&old.getBoundingClientRect(),hadModel=!!document.querySelector('.stage .pmodel');
+  render();
+  const box=document.querySelector('.stage .wsq');
+  if(!before||!box||!canAnimate())return;
+  const after=box.getBoundingClientRect();
+  if(!after.width||!before.width)return;
+  const timing={duration:SLIDE_MS,easing:'cubic-bezier(.2,.8,.2,1)'},origin='0 0';
+  box.animate([{transformOrigin:origin,transform:`translate(${before.left-after.left}px,${before.top-after.top}px) scale(${before.width/after.width},${before.height/after.height})`},{transformOrigin:origin,transform:'none'}],timing);
+  const m=document.querySelector('.stage .pmodel');
+  if(m&&!hadModel)m.animate([{opacity:0,transform:'scale(.85)'},{opacity:1,transform:'none'}],timing);
+}
+
 export {STROKES};
 
 // An entry can be two characters (きゃ): each gets its own picture, side by side in a .multi wrapper,
